@@ -1,0 +1,6 @@
+{
+  "name": "Material Transfer",
+  "description": "An app that applies a selected material in the Product to a selected area in the Scene.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
