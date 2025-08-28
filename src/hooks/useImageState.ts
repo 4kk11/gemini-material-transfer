@@ -56,6 +56,21 @@ export const useImageState = () => {
     setSceneMask(maskDataUrl);
   }, []);
 
+  /**
+   * Clears product image and its mask
+   */
+  const clearProductImage = useCallback(() => {
+    setProductImageFile(null);
+    setMaterialMask(null);
+  }, []);
+
+  /**
+   * Clears scene image and its mask
+   */
+  const clearSceneImage = useCallback(() => {
+    setSceneImageFile(null);
+    setSceneMask(null);
+  }, []);
 
   /**
    * Resets all image-related state
@@ -95,6 +110,8 @@ export const useImageState = () => {
     handleSceneImageUpload,
     handleMaterialMaskUpdate,
     handleSceneMaskUpdate,
+    clearProductImage,
+    clearSceneImage,
     resetImageState,
     setResultImageUrl,
     // Computed

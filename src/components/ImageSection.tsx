@@ -12,6 +12,7 @@ interface ImageSectionProps {
   materialMask: string | null;
   onProductImageUpload: (file: File) => void;
   onMaterialMaskUpdate: (maskDataUrl: string | null) => void;
+  onProductImageClear: () => void;
   showMaterialDebug: boolean;
   onMaterialDebugClick: () => void;
   
@@ -20,6 +21,7 @@ interface ImageSectionProps {
   sceneMask: string | null;
   onSceneImageUpload: (file: File) => void;
   onSceneMaskUpdate: (maskDataUrl: string | null) => void;
+  onSceneImageClear: () => void;
   showSceneDebug: boolean;
   onSceneDebugClick: () => void;
   
@@ -34,12 +36,14 @@ const ImageSection: React.FC<ImageSectionProps> = ({
   materialMask,
   onProductImageUpload,
   onMaterialMaskUpdate,
+  onProductImageClear,
   showMaterialDebug,
   onMaterialDebugClick,
   sceneImageUrl,
   sceneMask,
   onSceneImageUpload,
   onSceneMaskUpdate,
+  onSceneImageClear,
   showSceneDebug,
   onSceneDebugClick,
   isLoading
@@ -56,6 +60,7 @@ const ImageSection: React.FC<ImageSectionProps> = ({
           imageUrl={productImageUrl}
           maskUrl={materialMask}
           onMaskUpdate={onMaterialMaskUpdate}
+          onClearImage={onProductImageClear}
           showDebugButton={showMaterialDebug}
           onDebugClick={onMaterialDebugClick}
         />
@@ -71,6 +76,7 @@ const ImageSection: React.FC<ImageSectionProps> = ({
           imageUrl={sceneImageUrl}
           maskUrl={sceneMask}
           onMaskUpdate={onSceneMaskUpdate}
+          onClearImage={onSceneImageClear}
           showDebugButton={showSceneDebug}
           onDebugClick={onSceneDebugClick}
         />

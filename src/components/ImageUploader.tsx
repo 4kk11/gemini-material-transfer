@@ -14,6 +14,7 @@ interface ImageUploaderProps {
   onMaskUpdate?: (maskDataUrl: string | null) => void;
   showDebugButton?: boolean;
   onDebugClick?: () => void;
+  onClearImage?: () => void;
 }
 
 const UploadIcon: React.FC = () => (
@@ -28,7 +29,7 @@ const WarningIcon: React.FC = () => (
     </svg>
 );
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, imageUrl, maskUrl, onMaskUpdate, showDebugButton, onDebugClick }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, imageUrl, maskUrl, onMaskUpdate, showDebugButton, onDebugClick, onClearImage }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -311,12 +312,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    inputRef.current?.click();
+                    onClearImage?.();
                 }}
                 className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
-                aria-label="Change image"
+                aria-label="Clear image"
             >
-                Change Image
+                Clear Image
             </button>
           </>
         ) : (

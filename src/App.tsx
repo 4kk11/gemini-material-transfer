@@ -108,6 +108,22 @@ const App: React.FC = () => {
   }, [imageState, uiState]);
 
   /**
+   * Handles product image clearing
+   */
+  const onProductImageClear = useCallback(() => {
+    uiState.clearError();
+    imageState.clearProductImage();
+  }, [imageState, uiState]);
+
+  /**
+   * Handles scene image clearing
+   */
+  const onSceneImageClear = useCallback(() => {
+    uiState.clearError();
+    imageState.clearSceneImage();
+  }, [imageState, uiState]);
+
+  /**
    * Renders the main content based on application state
    */
   const renderContent = () => {
@@ -124,12 +140,14 @@ const App: React.FC = () => {
           materialMask={imageState.materialMask}
           onProductImageUpload={onProductImageUpload}
           onMaterialMaskUpdate={imageState.handleMaterialMaskUpdate}
+          onProductImageClear={onProductImageClear}
           showMaterialDebug={uiState.showMaterialDebug}
           onMaterialDebugClick={() => uiState.setIsMaterialDebugModalOpen(true)}
           sceneImageUrl={imageState.sceneImageUrl}
           sceneMask={imageState.sceneMask}
           onSceneImageUpload={onSceneImageUpload}
           onSceneMaskUpdate={imageState.handleSceneMaskUpdate}
+          onSceneImageClear={onSceneImageClear}
           showSceneDebug={uiState.showSceneDebug}
           onSceneDebugClick={() => uiState.setIsSceneDebugModalOpen(true)}
           isLoading={uiState.isLoading}
