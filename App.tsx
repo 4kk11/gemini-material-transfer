@@ -37,12 +37,12 @@ const blobToDataURL = (blob: Blob): Promise<string> => {
 };
 
 const loadingMessages = [
-    "Analyzing source material...",
-    "Scanning the target scene...",
-    "Formulating the material transfer plan...",
-    "Inpainting with Gemini...",
-    "Matching lighting and shadows...",
-    "Finalizing the new scene..."
+    "Extracting material characteristics with AI...",
+    "Analyzing target area in the scene...",
+    "Generating detailed material description...",
+    "Processing scene area properties...",
+    "Applying material with natural integration...",
+    "Finalizing photorealistic result..."
 ];
 
 
@@ -58,6 +58,8 @@ const App: React.FC = () => {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   
   const [debugImageUrl, setDebugImageUrl] = useState<string | null>(null);
+  const [materialDebugUrl, setMaterialDebugUrl] = useState<string | null>(null);
+  const [sceneDebugUrl, setSceneDebugUrl] = useState<string | null>(null);
   const [debugPrompt, setDebugPrompt] = useState<string | null>(null);
   const [isDebugModalOpen, setIsDebugModalOpen] = useState(false);
 
@@ -142,10 +144,12 @@ const App: React.FC = () => {
     setError(null);
     setResultImageUrl(null);
     setDebugImageUrl(null);
+    setMaterialDebugUrl(null);
+    setSceneDebugUrl(null);
     setDebugPrompt(null);
     
     try {
-      const { finalImageUrl, debugImageUrl, finalPrompt } = await applyMaterial(
+      const { finalImageUrl, debugImageUrl, finalPrompt, materialDebugUrl, sceneDebugUrl } = await applyMaterial(
         productImageFile,
         materialMask,
         sceneImageFile,
@@ -153,6 +157,8 @@ const App: React.FC = () => {
       );
       setResultImageUrl(finalImageUrl);
       setDebugImageUrl(debugImageUrl);
+      setMaterialDebugUrl(materialDebugUrl || null);
+      setSceneDebugUrl(sceneDebugUrl || null);
       setDebugPrompt(finalPrompt);
 
     } catch (err) {
@@ -174,6 +180,8 @@ const App: React.FC = () => {
     setError(null);
     setIsLoading(false);
     setDebugImageUrl(null);
+    setMaterialDebugUrl(null);
+    setSceneDebugUrl(null);
     setDebugPrompt(null);
   }, []);
   
@@ -241,7 +249,7 @@ const App: React.FC = () => {
               imageUrl={sceneImageUrl}
               maskUrl={sceneMask}
               onMaskUpdate={handleSceneMaskUpdate}
-              showDebugButton={!!debugImageUrl && !isLoading}
+              showDebugButton={!!(sceneDebugUrl || debugImageUrl) && !isLoading}
               onDebugClick={() => setIsDebugModalOpen(true)}
             />
           </div>
@@ -326,7 +334,8 @@ const App: React.FC = () => {
       <DebugModal 
         isOpen={isDebugModalOpen} 
         onClose={() => setIsDebugModalOpen(false)}
-        imageUrl={debugImageUrl}
+        imageUrl={sceneDebugUrl || debugImageUrl}
+        materialImageUrl={materialDebugUrl}
         prompt={debugPrompt}
       />
     </div>

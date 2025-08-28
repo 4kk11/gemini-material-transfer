@@ -9,6 +9,7 @@ interface DebugModalProps {
   isOpen: boolean;
   onClose: () => void;
   imageUrl: string | null;
+  materialImageUrl?: string | null;
   prompt: string | null;
 }
 
@@ -18,7 +19,7 @@ const CloseIcon = () => (
     </svg>
 );
 
-const DebugModal: React.FC<DebugModalProps> = ({ isOpen, onClose, imageUrl, prompt }) => {
+const DebugModal: React.FC<DebugModalProps> = ({ isOpen, onClose, imageUrl, materialImageUrl, prompt }) => {
   if (!isOpen || !imageUrl) {
     return null;
   }
@@ -52,8 +53,19 @@ const DebugModal: React.FC<DebugModalProps> = ({ isOpen, onClose, imageUrl, prom
         </div>
         
         <div className="flex flex-col gap-4 overflow-y-auto">
+          {materialImageUrl && (
+            <div>
+              <h3 className="text-lg font-bold text-zinc-800 mb-2">Material Source (Red Border)</h3>
+              <p className="text-zinc-600 mb-2">The material extraction area marked with red border.</p>
+              <div className="rounded-lg overflow-hidden bg-zinc-100">
+                  <img src={materialImageUrl} alt="Debug view of marked material" className="w-full h-full object-contain" />
+              </div>
+            </div>
+          )}
+          
           <div>
-            <p className="text-zinc-600 mb-2">This is the image sent to the AI, with a red marker indicating the placement.</p>
+            <h3 className="text-lg font-bold text-zinc-800 mb-2">Scene Target (Red Border)</h3>
+            <p className="text-zinc-600 mb-2">The scene area marked with red border where material will be applied.</p>
             <div className="rounded-lg overflow-hidden bg-zinc-100">
                 <img src={imageUrl} alt="Debug view of marked scene" className="w-full h-full object-contain" />
             </div>
