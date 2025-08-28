@@ -45,7 +45,11 @@ const App: React.FC = () => {
   const [materialDebugUrl, setMaterialDebugUrl] = useState<string | null>(null);
   const [sceneDebugUrl, setSceneDebugUrl] = useState<string | null>(null);
   const [debugPrompt, setDebugPrompt] = useState<string | null>(null);
-  const [isDebugModalOpen, setIsDebugModalOpen] = useState(false);
+  const [materialDescription, setMaterialDescription] = useState<string | null>(null);
+  const [sceneAreaDescription, setSceneAreaDescription] = useState<string | null>(null);
+  const [isMaterialDebugModalOpen, setIsMaterialDebugModalOpen] = useState(false);
+  const [isSceneDebugModalOpen, setIsSceneDebugModalOpen] = useState(false);
+  const [isResultDebugModalOpen, setIsResultDebugModalOpen] = useState(false);
 
   const productImageUrl = productImageFile ? URL.createObjectURL(productImageFile) : null;
   const sceneImageUrl = sceneImageFile ? URL.createObjectURL(sceneImageFile) : null;
@@ -131,9 +135,11 @@ const App: React.FC = () => {
     setMaterialDebugUrl(null);
     setSceneDebugUrl(null);
     setDebugPrompt(null);
+    setMaterialDescription(null);
+    setSceneAreaDescription(null);
     
     try {
-      const { finalImageUrl, debugImageUrl, finalPrompt, materialDebugUrl, sceneDebugUrl } = await applyMaterial(
+      const { finalImageUrl, debugImageUrl, finalPrompt, materialDebugUrl, sceneDebugUrl, materialDescription, sceneAreaDescription } = await applyMaterial(
         productImageFile,
         materialMask,
         sceneImageFile,
@@ -144,6 +150,8 @@ const App: React.FC = () => {
       setMaterialDebugUrl(materialDebugUrl || null);
       setSceneDebugUrl(sceneDebugUrl || null);
       setDebugPrompt(finalPrompt);
+      setMaterialDescription(materialDescription || null);
+      setSceneAreaDescription(sceneAreaDescription || null);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
@@ -167,6 +175,11 @@ const App: React.FC = () => {
     setMaterialDebugUrl(null);
     setSceneDebugUrl(null);
     setDebugPrompt(null);
+    setMaterialDescription(null);
+    setSceneAreaDescription(null);
+    setIsMaterialDebugModalOpen(false);
+    setIsSceneDebugModalOpen(false);
+    setIsResultDebugModalOpen(false);
   }, []);
   
   useEffect(() => {
@@ -223,6 +236,8 @@ const App: React.FC = () => {
               imageUrl={productImageUrl}
               maskUrl={materialMask}
               onMaskUpdate={handleMaterialMaskUpdate}
+              showDebugButton={!!materialDebugUrl && !isLoading}
+              onDebugClick={() => setIsMaterialDebugModalOpen(true)}
             />
           </div>
           <div className="flex flex-col">
@@ -233,8 +248,8 @@ const App: React.FC = () => {
               imageUrl={sceneImageUrl}
               maskUrl={sceneMask}
               onMaskUpdate={handleSceneMaskUpdate}
-              showDebugButton={!!(sceneDebugUrl || debugImageUrl) && !isLoading}
-              onDebugClick={() => setIsDebugModalOpen(true)}
+              showDebugButton={!!sceneDebugUrl && !isLoading}
+              onDebugClick={() => setIsSceneDebugModalOpen(true)}
             />
           </div>
         </div>
@@ -283,8 +298,17 @@ const App: React.FC = () => {
                 <div className="text-center mb-6">
                     <h2 className="text-4xl font-extrabold text-zinc-800">Generated Result</h2>
                 </div>
-                <div className="w-full max-w-4xl mx-auto bg-zinc-100 border-2 border-zinc-200 rounded-lg overflow-hidden shadow-lg">
+                <div className="w-full max-w-4xl mx-auto bg-zinc-100 border-2 border-zinc-200 rounded-lg overflow-hidden shadow-lg relative">
                     <img src={resultImageUrl} alt="Generated scene" className="w-full h-full object-contain" />
+                    {debugImageUrl && (
+                        <button
+                            onClick={() => setIsResultDebugModalOpen(true)}
+                            className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
+                            aria-label="Show generation debug view"
+                        >
+                            Debug
+                        </button>
+                    )}
                 </div>
                 <div className="text-center mt-6 flex justify-center items-center gap-4">
                      <a
@@ -316,10 +340,31 @@ const App: React.FC = () => {
         </main>
       </div>
       <DebugModal 
-        isOpen={isDebugModalOpen} 
-        onClose={() => setIsDebugModalOpen(false)}
-        imageUrl={sceneDebugUrl || debugImageUrl}
-        materialImageUrl={materialDebugUrl}
+        isOpen={isMaterialDebugModalOpen} 
+        onClose={() => setIsMaterialDebugModalOpen(false)}
+        imageUrl={materialDebugUrl}
+        title="Material Extraction Debug"
+        description="The material area marked with red border for AI analysis"
+        showPromptSection={false}
+        aiResponse={materialDescription}
+        aiResponseTitle="AI Material Analysis"
+      />
+      <DebugModal 
+        isOpen={isSceneDebugModalOpen} 
+        onClose={() => setIsSceneDebugModalOpen(false)}
+        imageUrl={sceneDebugUrl}
+        title="Target Area Detection Debug"
+        description="The target area marked with red border for material application"
+        showPromptSection={false}
+        aiResponse={sceneAreaDescription}
+        aiResponseTitle="AI Scene Area Analysis"
+      />
+      <DebugModal 
+        isOpen={isResultDebugModalOpen} 
+        onClose={() => setIsResultDebugModalOpen(false)}
+        imageUrl={resultImageUrl}
+        title="Generation Result Debug"
+        description="The generated result image and the prompt used for generation"
         prompt={debugPrompt}
       />
     </div>

@@ -11,6 +11,12 @@ interface DebugModalProps {
   imageUrl: string | null;
   materialImageUrl?: string | null;
   prompt: string | null;
+  title?: string;
+  description?: string;
+  showMaterialSection?: boolean;
+  showPromptSection?: boolean;
+  aiResponse?: string | null;
+  aiResponseTitle?: string;
 }
 
 const CloseIcon = () => (
@@ -19,7 +25,19 @@ const CloseIcon = () => (
     </svg>
 );
 
-const DebugModal: React.FC<DebugModalProps> = ({ isOpen, onClose, imageUrl, materialImageUrl, prompt }) => {
+const DebugModal: React.FC<DebugModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  imageUrl, 
+  materialImageUrl, 
+  prompt, 
+  title = "Debug View",
+  description,
+  showMaterialSection = false,
+  showPromptSection = true,
+  aiResponse,
+  aiResponseTitle = "AI Analysis Response"
+}) => {
   if (!isOpen || !imageUrl) {
     return null;
   }
@@ -49,11 +67,12 @@ const DebugModal: React.FC<DebugModalProps> = ({ isOpen, onClose, imageUrl, mate
           <CloseIcon />
         </button>
         <div className="text-center mb-4 flex-shrink-0">
-          <h2 className="text-2xl font-extrabold text-zinc-800">Debug View</h2>
+          <h2 className="text-2xl font-extrabold text-zinc-800">{title}</h2>
+          {description && <p className="text-zinc-600 mt-1">{description}</p>}
         </div>
         
         <div className="flex flex-col gap-4 overflow-y-auto">
-          {materialImageUrl && (
+          {materialImageUrl && showMaterialSection && (
             <div>
               <h3 className="text-lg font-bold text-zinc-800 mb-2">Material Source (Red Border)</h3>
               <p className="text-zinc-600 mb-2">The material extraction area marked with red border.</p>
@@ -64,14 +83,21 @@ const DebugModal: React.FC<DebugModalProps> = ({ isOpen, onClose, imageUrl, mate
           )}
           
           <div>
-            <h3 className="text-lg font-bold text-zinc-800 mb-2">Scene Target (Red Border)</h3>
-            <p className="text-zinc-600 mb-2">The scene area marked with red border where material will be applied.</p>
             <div className="rounded-lg overflow-hidden bg-zinc-100">
-                <img src={imageUrl} alt="Debug view of marked scene" className="w-full h-full object-contain" />
+                <img src={imageUrl} alt="Debug view" className="w-full h-full object-contain" />
             </div>
           </div>
           
-          {prompt && (
+          {aiResponse && (
+            <div>
+                <h3 className="text-lg font-bold text-zinc-800 mb-2">{aiResponseTitle}</h3>
+                <pre className="bg-blue-50 border border-blue-200 text-zinc-700 p-4 rounded-lg text-xs whitespace-pre-wrap">
+                    <code>{aiResponse}</code>
+                </pre>
+            </div>
+          )}
+          
+          {prompt && showPromptSection && (
             <div>
                 <h3 className="text-lg font-bold text-zinc-800 mb-2">Final Prompt to Image Model</h3>
                 <pre className="bg-zinc-100 text-zinc-700 p-4 rounded-lg text-xs whitespace-pre-wrap">

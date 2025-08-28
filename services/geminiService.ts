@@ -462,7 +462,7 @@ export const applyMaterial = async (
     materialMask: string,
     sceneImage: File,
     sceneMask: string
-): Promise<{ finalImageUrl: string; debugImageUrl: string; finalPrompt: string; materialDebugUrl?: string; sceneDebugUrl?: string; }> => {
+): Promise<{ finalImageUrl: string; debugImageUrl: string; finalPrompt: string; materialDebugUrl?: string; sceneDebugUrl?: string; materialDescription?: string; sceneAreaDescription?: string; }> => {
   console.log('Starting material transfer process...');
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
@@ -540,7 +540,7 @@ ${sceneAreaDescription}
         MAX_DIMENSION
     );
     
-    return { finalImageUrl, debugImageUrl, finalPrompt: prompt, materialDebugUrl, sceneDebugUrl };
+    return { finalImageUrl, debugImageUrl, finalPrompt: prompt, materialDebugUrl, sceneDebugUrl, materialDescription, sceneAreaDescription };
   }
 
   console.error("Model response did not contain an image part.", response);
