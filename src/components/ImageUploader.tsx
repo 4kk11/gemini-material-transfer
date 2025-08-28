@@ -308,6 +308,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
                     Debug
                 </button>
             )}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    inputRef.current?.click();
+                }}
+                className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
+                aria-label="Change image"
+            >
+                Change Image
+            </button>
           </>
         ) : (
           <div className="text-center text-zinc-500 p-4">

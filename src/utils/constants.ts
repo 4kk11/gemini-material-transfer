@@ -24,12 +24,3 @@ export const LOADING_MESSAGES = [
  */
 export const MAX_IMAGE_DIMENSION = 1024;
 
-/**
- * Default assets for instant start feature
- */
-export const DEFAULT_ASSETS = {
-  OBJECT_IMAGE: '/assets/object.jpeg',
-  SCENE_IMAGE: '/assets/scene.jpeg',
-  OBJECT_MASK: '/assets/object-mask.png',
-  SCENE_MASK: '/assets/scene-mask.png'
-} as const;

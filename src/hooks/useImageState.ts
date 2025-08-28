@@ -4,8 +4,6 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { blobToDataURL } from '../utils/fileUtils';
-import { DEFAULT_ASSETS } from '../utils/constants';
 
 /**
  * Custom hook for managing image upload and mask state
@@ -58,44 +56,6 @@ export const useImageState = () => {
     setSceneMask(maskDataUrl);
   }, []);
 
-  /**
-   * Loads default images and masks for instant start
-   */
-  const loadDefaultAssets = useCallback(async () => {
-    // Fetch the default images and their masks
-    const [objectResponse, sceneResponse, objectMaskResponse, sceneMaskResponse] = await Promise.all([
-      fetch(DEFAULT_ASSETS.OBJECT_IMAGE),
-      fetch(DEFAULT_ASSETS.SCENE_IMAGE),
-      fetch(DEFAULT_ASSETS.OBJECT_MASK),
-      fetch(DEFAULT_ASSETS.SCENE_MASK)
-    ]);
-
-    if (!objectResponse.ok || !sceneResponse.ok || !objectMaskResponse.ok || !sceneMaskResponse.ok) {
-      throw new Error('Failed to load default assets');
-    }
-
-    // Convert to blobs
-    const [objectBlob, sceneBlob, objectMaskBlob, sceneMaskBlob] = await Promise.all([
-      objectResponse.blob(),
-      sceneResponse.blob(),
-      objectMaskResponse.blob(),
-      sceneMaskResponse.blob(),
-    ]);
-
-    const objectFile = new File([objectBlob], 'material.jpeg', { type: 'image/jpeg' });
-    const sceneFile = new File([sceneBlob], 'scene.jpeg', { type: 'image/jpeg' });
-    
-    const [materialMaskDataUrl, sceneMaskDataUrl] = await Promise.all([
-      blobToDataURL(objectMaskBlob),
-      blobToDataURL(sceneMaskBlob),
-    ]);
-
-    // Update state with the new files and masks
-    setProductImageFile(objectFile);
-    setSceneImageFile(sceneFile);
-    setMaterialMask(materialMaskDataUrl);
-    setSceneMask(sceneMaskDataUrl);
-  }, []);
 
   /**
    * Resets all image-related state
@@ -135,7 +95,6 @@ export const useImageState = () => {
     handleSceneImageUpload,
     handleMaterialMaskUpdate,
     handleSceneMaskUpdate,
-    loadDefaultAssets,
     resetImageState,
     setResultImageUrl,
     // Computed

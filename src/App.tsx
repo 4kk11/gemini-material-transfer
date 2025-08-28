@@ -16,7 +16,7 @@ import DebugModals from './components/DebugModals';
 // Custom hooks
 import { useImageState } from './hooks/useImageState';
 import { useUIState } from './hooks/useUIState';
-import { useMaterialTransfer } from './hooks/useMaterialTransfer';
+import { applyMaterial } from './services/geminiService';
 
 /**
  * Main application component for material transfer functionality
@@ -31,37 +31,35 @@ const App: React.FC = () => {
   // Custom hooks for state management
   const imageState = useImageState();
   const uiState = useUIState();
-  const { handleInstantStart, handleGenerate } = useMaterialTransfer();
 
   /**
-   * Handles the instant start functionality with error handling
+   * Handles the instant start functionality - clears any errors and resets to upload state
    */
-  const onInstantStart = useCallback(async () => {
+  const onInstantStart = useCallback(() => {
     uiState.clearError();
     imageState.setResultImageUrl(null);
-    
-    try {
-      await handleInstantStart(imageState.loadDefaultAssets);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      uiState.setErrorMessage(errorMessage);
-      console.error(err);
-    }
-  }, [handleInstantStart, imageState, uiState]);
+    imageState.resetImageState();
+  }, [imageState, uiState]);
 
   /**
    * Handles the material generation process with complete error handling
    */
   const onGenerate = useCallback(async () => {
+    // Validation
+    if (!imageState.productImageFile || !imageState.sceneImageFile || !imageState.materialMask || !imageState.sceneMask) {
+      uiState.setErrorMessage('Please select a material and a scene area before generating.');
+      return;
+    }
+
     uiState.startLoading();
     imageState.setResultImageUrl(null);
     uiState.clearDebugData();
     
     try {
-      const result = await handleGenerate(
+      const result = await applyMaterial(
         imageState.productImageFile,
-        imageState.sceneImageFile,
         imageState.materialMask,
+        imageState.sceneImageFile,
         imageState.sceneMask
       );
       
@@ -78,12 +76,12 @@ const App: React.FC = () => {
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      uiState.setErrorMessage(errorMessage);
+      uiState.setErrorMessage(`Failed to generate the image. ${errorMessage}`);
       console.error(err);
     } finally {
       uiState.stopLoading();
     }
-  }, [handleGenerate, imageState, uiState]);
+  }, [imageState, uiState]);
 
   /**
    * Handles complete application reset
