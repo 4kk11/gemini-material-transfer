@@ -104,14 +104,27 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
     const containerRect = container.getBoundingClientRect();
     const { naturalWidth, naturalHeight } = img;
 
-    const displayWidth = img.offsetWidth;
-    const displayHeight = img.offsetHeight;
+    // Calculate actual displayed image size with object-contain
+    const imgAspect = naturalWidth / naturalHeight;
+    const containerAspect = containerRect.width / containerRect.height;
+    
+    let actualDisplayWidth, actualDisplayHeight;
+    
+    if (imgAspect > containerAspect) {
+      // Image is wider, fit to width
+      actualDisplayWidth = containerRect.width;
+      actualDisplayHeight = containerRect.width / imgAspect;
+    } else {
+      // Image is taller, fit to height
+      actualDisplayHeight = containerRect.height;
+      actualDisplayWidth = containerRect.height * imgAspect;
+    }
 
-    const offsetX = (containerRect.width - displayWidth) / 2;
-    const offsetY = (containerRect.height - displayHeight) / 2;
+    const offsetX = (containerRect.width - actualDisplayWidth) / 2;
+    const offsetY = (containerRect.height - actualDisplayHeight) / 2;
 
-    const x = (clientX - containerRect.left - offsetX) / displayWidth * naturalWidth;
-    const y = (clientY - containerRect.top - offsetY) / displayHeight * naturalHeight;
+    const x = (clientX - containerRect.left - offsetX) / actualDisplayWidth * naturalWidth;
+    const y = (clientY - containerRect.top - offsetY) / actualDisplayHeight * naturalHeight;
     
     return { x, y };
   };
@@ -131,7 +144,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = 'white';
-    ctx.lineWidth = BRUSH_SIZE * (canvasRef.current!.width / imgRef.current!.offsetWidth);
+    // Calculate actual display width for consistent brush size
+    const { naturalWidth, naturalHeight } = imgRef.current!;
+    const containerRect = containerRef.current!.getBoundingClientRect();
+    const imgAspect = naturalWidth / naturalHeight;
+    const containerAspect = containerRect.width / containerRect.height;
+    
+    const actualDisplayWidth = imgAspect > containerAspect 
+      ? containerRect.width 
+      : containerRect.height * imgAspect;
+    
+    ctx.lineWidth = BRUSH_SIZE * (canvasRef.current!.width / actualDisplayWidth);
 
     if (lastPos.current) {
         ctx.beginPath();
