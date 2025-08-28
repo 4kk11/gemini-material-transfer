@@ -28,8 +28,6 @@ const WarningIcon: React.FC = () => (
     </svg>
 );
 
-const BRUSH_SIZE = 20;
-
 const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, imageUrl, maskUrl, onMaskUpdate, showDebugButton, onDebugClick }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -39,6 +37,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [fileTypeError, setFileTypeError] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [brushSize, setBrushSize] = useState(20);
   const lastPos = useRef<{x: number, y: number} | null>(null);
 
   useEffect(() => {
@@ -154,7 +153,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
       ? containerRect.width 
       : containerRect.height * imgAspect;
     
-    ctx.lineWidth = BRUSH_SIZE * (canvasRef.current!.width / actualDisplayWidth);
+    ctx.lineWidth = brushSize * (canvasRef.current!.width / actualDisplayWidth);
 
     if (lastPos.current) {
         ctx.beginPath();
@@ -264,14 +263,38 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
               className="absolute top-0 left-0 w-full h-full object-contain pointer-events-none opacity-50"
               style={{ mixBlendMode: 'screen' }}
             />
-            {onMaskUpdate && maskUrl && (
-                <button
-                    onClick={handleClearMask}
-                    className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
-                    aria-label="Clear mask"
-                >
-                    Clear Mask
-                </button>
+            {onMaskUpdate && (
+                <>
+                    <div 
+                        className="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-lg flex items-center gap-2 z-30"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <span>Brush:</span>
+                        <input
+                            type="range"
+                            min="5"
+                            max="50"
+                            value={brushSize}
+                            onChange={(e) => {
+                                e.stopPropagation();
+                                setBrushSize(Number(e.target.value));
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            className="w-16 h-1 bg-gray-300 rounded-full appearance-none cursor-pointer"
+                        />
+                        <span className="text-xs">{brushSize}</span>
+                    </div>
+                    {maskUrl && (
+                        <button
+                            onClick={handleClearMask}
+                            className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
+                            aria-label="Clear mask"
+                        >
+                            Clear Mask
+                        </button>
+                    )}
+                </>
             )}
             {showDebugButton && onDebugClick && (
                 <button
