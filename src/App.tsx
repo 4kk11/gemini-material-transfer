@@ -70,8 +70,7 @@ const App: React.FC = () => {
         materialDebugUrl: result.materialDebugUrl,
         sceneDebugUrl: result.sceneDebugUrl,
         finalPrompt: result.finalPrompt,
-        materialDescription: result.materialDescription,
-        sceneAreaDescription: result.sceneAreaDescription
+        materialDescription: result.materialDescription
       });
 
     } catch (err) {

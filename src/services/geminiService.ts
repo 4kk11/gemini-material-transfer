@@ -7,43 +7,39 @@ import { getImageDimensions, cropToOriginalAspectRatio } from '../utils/imageUti
 import { fileToDataUrl } from '../utils/fileUtils';
 import { drawRedBordersFromMask, createModelInputImage } from '../utils/canvasUtils';
 import { MAX_IMAGE_DIMENSION } from '../utils/constants';
-import { generateContentWithImage, extractImageFromResponse } from './aiService';
-import { extractMaterialDescription, detectSceneArea } from './materialAnalysis';
+import { generateContentWithTwoImages, extractImageFromResponse } from './aiService';
+import { extractMaterialDescription } from './materialAnalysis';
 
 /**
  * Main service for material transfer operations
  * 
  * This service orchestrates the complete material transfer workflow:
  * 1. Analyzes material characteristics from the source image
- * 2. Detects and analyzes the target scene area
- * 3. Generates the final image with material applied using AI
+ * 2. Generates the final image with material applied using AI with two images input
  */
 
 /**
  * Prompt template for material application generation in Japanese
  */
-const MATERIAL_APPLICATION_PROMPT = (materialDescription: string, sceneAreaDescription: string) => 
+const MATERIAL_APPLICATION_PROMPT = (materialDescription: string) => 
 `# 材料変換システム
 
-あなたは高精度な材料変換の専門家です。画像中の**文章で記述された特定領域**の材料を、指定された新しい材料に変換します。
+あなたは高精度な材料変換の専門家です。赤い線で領域指定した部分の材料を、指定された新しい材料に変更します。
 
 ## 入力
 
 ### 画像
-- 変換対象の画像が提供されます
+- 1枚目：赤い線で領域指定したシーン画像（変更対象領域を示す）
+- 2枚目：オリジナルのシーン画像（元の状態）
 - 黒背景や余白部分は無視し、画像本体のみを対象とします
 
 ### 材料情報
 - 変換先の材料の詳細な特性が以下で提供されます
 - **新材料の特性**: 「${materialDescription}」
 
-### 変換対象領域
-- 変換する領域の空間的位置が文章で詳細に記述されます
-- **対象領域の位置**: 「${sceneAreaDescription}」
-
 ## 変換の実行手順
 
-1. **領域の特定**: 文章記述を基に画像内の変換対象領域を正確に識別
+1. **領域の特定**: 赤い線で指定された領域を正確に識別
 2. **材料の置換**: 指定領域の既存材料を新しい材料に完全に置換
 3. **環境適応**: 周囲の照明・遠近感・スケールに合わせて新材料を調整
 4. **物理的整合性**: 接触面の影、反射、質感の自然な表現
@@ -64,6 +60,7 @@ const MATERIAL_APPLICATION_PROMPT = (materialDescription: string, sceneAreaDescr
 - 単純な画像貼り付けや重ね合わせ
 - 材料を適用せずに元シーンを返すこと
 - 複数箇所への重複適用
+- 指定された領域以外の部分を変更すること
 
 ## 出力
 
@@ -87,8 +84,6 @@ export interface MaterialTransferResult {
   sceneDebugUrl?: string;
   /** AI-generated material description */
   materialDescription?: string;
-  /** AI-generated scene area description */
-  sceneAreaDescription?: string;
 }
 
 /**
@@ -96,9 +91,8 @@ export interface MaterialTransferResult {
  * 
  * This is the main entry point for the material transfer functionality. It performs:
  * 1. Material characteristic extraction
- * 2. Scene area analysis
- * 3. AI-powered material application
- * 4. Result processing and cropping
+ * 2. AI-powered material application using two images input
+ * 3. Result processing
  * 
  * @param materialImage - Source image containing the material to extract
  * @param materialMask - Mask data URL defining the material area
@@ -127,23 +121,21 @@ export const applyMaterial = async (
     fileToDataUrl(sceneRedBordered)
   ]);
   
-  // Stage 1 & 2: Parallel analysis of material and scene area
-  console.log('Analyzing material and scene area...');
-  const [materialDescription, sceneAreaDescription] = await Promise.all([
-    extractMaterialDescription(materialImage, materialMask),
-    detectSceneArea(sceneImage, sceneMask)
-  ]);
+  // Stage 1: Analyze material characteristics
+  console.log('Analyzing material characteristics...');
+  const materialDescription = await extractMaterialDescription(materialImage, materialMask);
 
-  // Stage 3: Prepare scene for inpainting and generate final image
+  // Stage 2: Prepare scene for material application and generate final image
   console.log('Applying material to scene...');
   const debugImageUrl = await fileToDataUrl(sceneImage);
-  // Generate the final prompt combining material and scene descriptions
-  const finalPrompt = MATERIAL_APPLICATION_PROMPT(materialDescription, sceneAreaDescription);
+  // Generate the final prompt with material description
+  const finalPrompt = MATERIAL_APPLICATION_PROMPT(materialDescription);
 
-  // Generate the final image using AI
+  // Generate the final image using AI with two images
   console.log('Generating final image with material applied...');
-  const response = await generateContentWithImage(
+  const response = await generateContentWithTwoImages(
     'gemini-2.5-flash-image-preview',
+    sceneRedBordered,
     sceneImage,
     finalPrompt
   );
@@ -163,7 +155,6 @@ export const applyMaterial = async (
     finalPrompt,
     materialDebugUrl,
     sceneDebugUrl,
-    materialDescription,
-    sceneAreaDescription
+    materialDescription
   };
 };

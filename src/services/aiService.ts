@@ -47,6 +47,34 @@ export const generateContentWithImage = async (
 };
 
 /**
+ * Generates content using Gemini with two images and text inputs
+ * @param model - The Gemini model to use
+ * @param imageFile1 - First image file to analyze
+ * @param imageFile2 - Second image file to analyze
+ * @param prompt - Text prompt for the AI
+ * @returns AI response with generated content
+ */
+export const generateContentWithTwoImages = async (
+  model: string,
+  imageFile1: File,
+  imageFile2: File,
+  prompt: string
+): Promise<GenerateContentResponse> => {
+  const ai = getAIClient();
+  
+  const textPart = { text: prompt };
+  const imagePart1 = await fileToPart(imageFile1);
+  const imagePart2 = await fileToPart(imageFile2);
+  
+  const response = await ai.models.generateContent({
+    model,
+    contents: { parts: [imagePart1, imagePart2, textPart] },
+  });
+  
+  return response;
+};
+
+/**
  * Extracts text response from AI generation result
  * @param response - The AI response object
  * @returns Extracted text content

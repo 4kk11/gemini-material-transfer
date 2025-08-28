@@ -79,14 +79,13 @@ export const useUIState = () => {
     sceneDebugUrl?: string;
     finalPrompt?: string;
     materialDescription?: string;
-    sceneAreaDescription?: string;
   }) => {
     setDebugImageUrl(data.debugImageUrl || null);
     setMaterialDebugUrl(data.materialDebugUrl || null);
     setSceneDebugUrl(data.sceneDebugUrl || null);
     setDebugPrompt(data.finalPrompt || null);
     setMaterialDescription(data.materialDescription || null);
-    setSceneAreaDescription(data.sceneAreaDescription || null);
+    setSceneAreaDescription(null);
   }, []);
 
   /**
