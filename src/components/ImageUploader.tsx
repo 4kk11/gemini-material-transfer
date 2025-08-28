@@ -226,6 +226,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   return (
     <div className="flex flex-col items-center w-full">
       {label && <h3 className="text-xl font-semibold mb-4 text-zinc-700">{label}</h3>}
+
       <div
         ref={containerRef}
         className={uploaderClasses}
@@ -264,39 +265,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
               className="absolute top-0 left-0 w-full h-full object-contain pointer-events-none opacity-50"
               style={{ mixBlendMode: 'screen' }}
             />
-            {onMaskUpdate && (
-                <>
-                    <div 
-                        className="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-lg flex items-center gap-2 z-30"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <span>Brush:</span>
-                        <input
-                            type="range"
-                            min="5"
-                            max="50"
-                            value={brushSize}
-                            onChange={(e) => {
-                                e.stopPropagation();
-                                setBrushSize(Number(e.target.value));
-                            }}
-                            onMouseDown={(e) => e.stopPropagation()}
-                            className="w-16 h-1 bg-gray-300 rounded-full appearance-none cursor-pointer"
-                        />
-                        <span className="text-xs">{brushSize}</span>
-                    </div>
-                    {maskUrl && (
-                        <button
-                            onClick={handleClearMask}
-                            className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
-                            aria-label="Clear mask"
-                        >
-                            Clear Mask
-                        </button>
-                    )}
-                </>
-            )}
             {showDebugButton && onDebugClick && (
                 <button
                     onClick={(e) => {
@@ -309,16 +277,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
                     Debug
                 </button>
             )}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onClearImage?.();
-                }}
-                className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
-                aria-label="Clear image"
-            >
-                Clear Image
-            </button>
           </>
         ) : (
           <div className="text-center text-zinc-500 p-4">
@@ -327,6 +285,65 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
           </div>
         )}
       </div>
+      
+      {/* Controls section - below the image */}
+      {imageUrl && onMaskUpdate && (
+        <div className="w-full mt-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="bg-zinc-200 text-zinc-800 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2">
+              <span>Brush:</span>
+              <input
+                type="range"
+                min="5"
+                max="50"
+                value={brushSize}
+                onChange={(e) => setBrushSize(Number(e.target.value))}
+                className="w-16 h-1 bg-gray-300 rounded-full appearance-none cursor-pointer"
+              />
+              <span className="text-xs">{brushSize}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {maskUrl && (
+              <button
+                onClick={handleClearMask}
+                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
+                aria-label="Clear mask"
+              >
+                Clear Mask
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClearImage?.();
+              }}
+              className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
+              aria-label="Clear image"
+            >
+              Clear Image
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Image button for when there's no mask functionality */}
+      {imageUrl && !onMaskUpdate && (
+        <div className="w-full mt-4 flex justify-end">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClearImage?.();
+            }}
+            className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
+            aria-label="Clear image"
+          >
+            Clear Image
+          </button>
+        </div>
+      )}
+
       {fileTypeError && (
         <div className="w-full mt-2 text-sm text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-lg p-3 flex items-center animate-fade-in" role="alert">
             <WarningIcon />
