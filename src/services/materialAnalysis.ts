@@ -52,7 +52,8 @@ const MATERIAL_ANALYSIS_PROMPT = `
 
 * 材料の色、質感、特徴を詳細に記述してください。
 * 記述は材料転写システムで使用されるため、**正確で再現可能な表現**を心がけてください。
-* 3-4文程度で簡潔かつ包括的に記述してください。
+* ものすごーく詳細な文章にすること。
+* 材料以外の特徴（床・壁・天井などの具体的な部材名称）は含めないでください。
 * `;
 
 
@@ -75,7 +76,7 @@ export const extractMaterialDescription = async (
   
   // Generate material analysis using AI
   const response = await generateContentWithImage(
-    'gemini-2.5-flash-lite',
+    'gemini-2.5-flash',
     resizedImage,
     MATERIAL_ANALYSIS_PROMPT
   );

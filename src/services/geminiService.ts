@@ -22,15 +22,16 @@ import { extractMaterialDescription } from './materialAnalysis';
  * Prompt template for material application generation in Japanese
  */
 const MATERIAL_APPLICATION_PROMPT = (materialDescription: string) => 
-`# 材料変換システム
+`
+# 材料変換システム
 
 あなたは高精度な材料変換の専門家です。赤い線で領域指定した部分の材料を、指定された新しい材料に変更します。
 
 ## 入力
 
 ### 画像
-- 1枚目：赤い線で領域指定したシーン画像（変更対象領域を示す）
-- 2枚目：オリジナルのシーン画像（元の状態）
+- 1枚目：赤い線で領域指定した画像（変更対象領域を示す）
+- 2枚目：オリジナルの画像（元の状態）
 - 黒背景や余白部分は無視し、画像本体のみを対象とします
 
 ### 材料情報
@@ -65,7 +66,6 @@ const MATERIAL_APPLICATION_PROMPT = (materialDescription: string) =>
 ## 出力
 
 最終的な合成画像のみを生成してください。説明文やコメントは一切不要です。
-
 `;
 
 /**
