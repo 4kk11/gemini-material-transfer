@@ -7,7 +7,6 @@ import React, { useCallback } from 'react';
 
 // Components
 import Header from './components/Header';
-import ErrorDisplay from './components/ErrorDisplay';
 import ImageSection from './components/ImageSection';
 import ActionSection from './components/ActionSection';
 import ResultSection from './components/ResultSection';
@@ -96,16 +95,6 @@ const App: React.FC = () => {
     }
   }, [imageState, uiState]);
 
-  /**
-   * Handles retry with same inputs - clears error and attempts generation again
-   */
-  const onRetry = useCallback(() => {
-    uiState.clearError();
-    // Automatically retry with the same inputs if all required data is available
-    if (imageState.canGenerate) {
-      onGenerate();
-    }
-  }, [imageState.canGenerate, onGenerate, uiState]);
 
   /**
    * Handles complete application reset
@@ -151,18 +140,6 @@ const App: React.FC = () => {
    * Renders the main content based on application state
    */
   const renderContent = () => {
-    // Show error state
-    if (uiState.error) {
-      return (
-        <ErrorDisplay 
-          error={uiState.error} 
-          onReset={onReset} 
-          onRetry={onRetry}
-          canRetry={imageState.canGenerate}
-        />
-      );
-    }
-
     return (
       <div className="w-full max-w-6xl mx-auto animate-fade-in">
         {/* Image upload section */}
@@ -184,7 +161,7 @@ const App: React.FC = () => {
           isLoading={uiState.isLoading}
         />
 
-        {/* Action section with loading/generate button */}
+        {/* Action section with loading/generate button or error display */}
         <ActionSection
           isLoading={uiState.isLoading}
           loadingMessage={uiState.loadingMessage}
@@ -192,6 +169,7 @@ const App: React.FC = () => {
           canGenerate={imageState.canGenerate}
           onGenerate={onGenerate}
           onInstantStart={onInstantStart}
+          error={uiState.error}
         />
 
         {/* Result display section */}

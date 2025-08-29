@@ -13,6 +13,7 @@ interface ActionSectionProps {
   canGenerate: boolean;
   onGenerate: () => void;
   onInstantStart: () => void;
+  error?: string;
 }
 
 /**
@@ -24,10 +25,29 @@ const ActionSection: React.FC<ActionSectionProps> = ({
   areImagesUploaded,
   canGenerate,
   onGenerate,
-  onInstantStart
+  onInstantStart,
+  error
 }) => {
   return (
     <div className="text-center mt-10 min-h-[8rem] flex flex-col justify-center items-center">
+      {/* Error message display */}
+      {error && (
+        <div className="animate-fade-in p-4 rounded-lg max-w-2xl mx-auto bg-red-50 border border-red-200 mb-4">
+          <div className={`text-sm ${error.includes('RECITATION') ? 'text-orange-700' : 'text-red-700'}`}>
+            {error.split('\\n').map((line, index) => (
+              <div key={index} className={`${
+                line.startsWith('💡') || line.startsWith('•') 
+                  ? 'text-left mt-1 pl-2' 
+                  : 'text-center mb-1'
+              }`}>
+                {line || <br />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Main content */}
       {isLoading ? (
         <div className="animate-fade-in">
           <Spinner />
