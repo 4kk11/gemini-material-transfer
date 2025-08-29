@@ -8,12 +8,14 @@ import React from 'react';
 interface ErrorDisplayProps {
   error: string;
   onReset: () => void;
+  onRetry?: () => void;
+  canRetry?: boolean;
 }
 
 /**
  * Component for displaying error messages with retry functionality
  */
-const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onReset }) => {
+const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onReset, onRetry, canRetry = false }) => {
   const isRecitationError = error.includes('RECITATION');
   
   return (
@@ -45,22 +47,38 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onReset }) => {
         ))}
       </div>
       
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-4 justify-center flex-wrap">
+        {/* Try Again button - retries with same inputs */}
+        {canRetry && onRetry && (
+          <button
+            onClick={onRetry}
+            className={`font-bold py-3 px-8 rounded-lg text-lg transition-colors ${
+              isRecitationError
+                ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+          >
+            Try Again
+          </button>
+        )}
+        
+        {/* Reset/Different Image button */}
         <button
           onClick={onReset}
           className={`font-bold py-3 px-8 rounded-lg text-lg transition-colors ${
             isRecitationError
-              ? 'bg-orange-600 hover:bg-orange-700 text-white'
+              ? 'bg-gray-600 hover:bg-gray-700 text-white'
               : 'bg-red-600 hover:bg-red-700 text-white'
           }`}
         >
-          {isRecitationError ? 'Try Different Image' : 'Try Again'}
+          {isRecitationError ? 'Try Different Image' : canRetry ? 'Reset All' : 'Try Again'}
         </button>
         
+        {/* Page reload button for RECITATION errors */}
         {isRecitationError && (
           <button
             onClick={() => window.location.reload()}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
           >
             Reset Page
           </button>

@@ -96,6 +96,17 @@ const App: React.FC = () => {
   }, [imageState, uiState]);
 
   /**
+   * Handles retry with same inputs - clears error and attempts generation again
+   */
+  const onRetry = useCallback(() => {
+    uiState.clearError();
+    // Automatically retry with the same inputs if all required data is available
+    if (imageState.canGenerate) {
+      onGenerate();
+    }
+  }, [imageState.canGenerate, onGenerate, uiState]);
+
+  /**
    * Handles complete application reset
    */
   const onReset = useCallback(() => {
@@ -141,7 +152,14 @@ const App: React.FC = () => {
   const renderContent = () => {
     // Show error state
     if (uiState.error) {
-      return <ErrorDisplay error={uiState.error} onReset={onReset} />;
+      return (
+        <ErrorDisplay 
+          error={uiState.error} 
+          onReset={onReset} 
+          onRetry={onRetry}
+          canRetry={imageState.canGenerate}
+        />
+      );
     }
 
     return (
