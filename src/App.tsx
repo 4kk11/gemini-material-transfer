@@ -176,6 +176,7 @@ const App: React.FC = () => {
         {imageState.resultImageUrl && !uiState.isLoading && (
           <ResultSection
             resultImageUrl={imageState.resultImageUrl}
+            targetImageUrl={imageState.sceneImageUrl}
             debugImageUrl={uiState.debugImageUrl}
             onDebugClick={() => uiState.setIsResultDebugModalOpen(true)}
             onReset={onReset}
