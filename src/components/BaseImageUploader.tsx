@@ -112,6 +112,8 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
       }
       onFileSelect(file);
     }
+    // Reset input value to allow selecting the same file again after clearing
+    event.target.value = '';
   };
 
 
@@ -138,6 +140,10 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
               setFileTypeError(null);
           }
           onFileSelect(file);
+          // Reset input value to allow selecting the same file again after clearing
+          if (inputRef.current) {
+            inputRef.current.value = '';
+          }
       }
   }, [onFileSelect]);
   
