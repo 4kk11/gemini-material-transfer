@@ -11,7 +11,7 @@ interface DebugModalsProps {
   isMaterialDebugModalOpen: boolean;
   onCloseMaterialDebugModal: () => void;
   materialDebugUrl: string | null;
-  materialDescription: string | null;
+  seamlessTextureUrl: string | null;
   
   // Scene debug modal
   isSceneDebugModalOpen: boolean;
@@ -33,7 +33,7 @@ const DebugModals: React.FC<DebugModalsProps> = ({
   isMaterialDebugModalOpen,
   onCloseMaterialDebugModal,
   materialDebugUrl,
-  materialDescription,
+  seamlessTextureUrl,
   isSceneDebugModalOpen,
   onCloseSceneDebugModal,
   sceneDebugUrl,
@@ -48,12 +48,12 @@ const DebugModals: React.FC<DebugModalsProps> = ({
       <DebugModal 
         isOpen={isMaterialDebugModalOpen} 
         onClose={onCloseMaterialDebugModal}
-        imageUrl={materialDebugUrl}
-        title="Material Extraction Debug"
-        description="The material area marked with red border for AI analysis"
+        imageUrl={seamlessTextureUrl}
+        title="Generated Seamless Texture"
+        description="The seamless texture generated from the marked material area"
         showPromptSection={false}
-        aiResponse={materialDescription}
-        aiResponseTitle="AI Material Analysis"
+        aiResponse="Generated seamless texture based on the material characteristics from the marked area"
+        aiResponseTitle="Seamless Texture Generation"
       />
       
       <DebugModal 

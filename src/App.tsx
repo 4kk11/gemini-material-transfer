@@ -70,7 +70,7 @@ const App: React.FC = () => {
         materialDebugUrl: result.materialDebugUrl,
         sceneDebugUrl: result.sceneDebugUrl,
         finalPrompt: result.finalPrompt,
-        materialDescription: result.materialDescription
+        seamlessTextureUrl: result.seamlessTextureUrl
       });
 
     } catch (err) {
@@ -189,7 +189,7 @@ const App: React.FC = () => {
         isMaterialDebugModalOpen={uiState.isMaterialDebugModalOpen}
         onCloseMaterialDebugModal={() => uiState.setIsMaterialDebugModalOpen(false)}
         materialDebugUrl={uiState.materialDebugUrl}
-        materialDescription={uiState.materialDescription}
+        seamlessTextureUrl={uiState.seamlessTextureUrl}
         isSceneDebugModalOpen={uiState.isSceneDebugModalOpen}
         onCloseSceneDebugModal={() => uiState.setIsSceneDebugModalOpen(false)}
         sceneDebugUrl={uiState.sceneDebugUrl}
