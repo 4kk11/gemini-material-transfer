@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { LOADING_MESSAGES } from '../utils/constants';
+import { useState, useCallback } from 'react';
 
 /**
  * Custom hook for managing UI state including loading, errors, and debug modals
@@ -13,7 +12,7 @@ export const useUIState = () => {
   // Loading and error states
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [currentProgressMessage, setCurrentProgressMessage] = useState<string>('Processing...');
 
   // Debug modal states
   const [isMaterialDebugModalOpen, setIsMaterialDebugModalOpen] = useState(false);
@@ -34,9 +33,17 @@ export const useUIState = () => {
   /**
    * Sets loading state and clears error
    */
-  const startLoading = useCallback(() => {
+  const startLoading = useCallback((initialMessage?: string) => {
     setIsLoading(true);
     setError(null);
+    setCurrentProgressMessage(initialMessage || 'Processing...');
+  }, []);
+
+  /**
+   * Updates the current progress message
+   */
+  const updateProgress = useCallback((message: string) => {
+    setCurrentProgressMessage(message);
   }, []);
 
   /**
@@ -115,30 +122,17 @@ export const useUIState = () => {
   const resetUIState = useCallback(() => {
     setIsLoading(false);
     setError(null);
-    setLoadingMessageIndex(0);
+    setCurrentProgressMessage('Processing...');
     closeAllDebugModals();
     clearDebugData();
   }, [closeAllDebugModals, clearDebugData]);
 
-  // Manage loading message rotation
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (isLoading) {
-      setLoadingMessageIndex(0); // Reset on start
-      interval = setInterval(() => {
-        setLoadingMessageIndex(prevIndex => (prevIndex + 1) % LOADING_MESSAGES.length);
-      }, 3000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isLoading]);
 
   return {
     // Loading and error state
     isLoading,
     error,
-    loadingMessage: LOADING_MESSAGES[loadingMessageIndex],
+    loadingMessage: currentProgressMessage,
     
     // Debug modal state
     isMaterialDebugModalOpen,
@@ -161,6 +155,7 @@ export const useUIState = () => {
     stopLoading,
     setErrorMessage,
     clearError,
+    updateProgress,
     
     // Debug actions
     setIsMaterialDebugModalOpen,

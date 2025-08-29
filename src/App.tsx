@@ -61,7 +61,8 @@ const App: React.FC = () => {
         imageState.productImageFile,
         imageState.materialMarkerPosition,
         imageState.sceneImageFile,
-        imageState.sceneMask
+        imageState.sceneMask,
+        uiState.updateProgress
       );
       
       // Update result and debug data

@@ -30,16 +30,23 @@ export const getAIClient = (): GoogleGenAI => {
 };
 
 /**
+ * Progress callback function type for AI operations
+ */
+export type ProgressCallback = (message: string) => void;
+
+/**
  * Generates content using Gemini with image and text inputs
  * @param model - The Gemini model to use
  * @param imageFile - Image file to analyze
  * @param prompt - Text prompt for the AI
+ * @param onProgress - Optional progress callback
  * @returns AI response with generated content
  */
 export const generateContentWithImage = async (
   model: string,
   imageFile: File,
-  prompt: string
+  prompt: string,
+  onProgress?: ProgressCallback
 ): Promise<GenerateContentResponse> => {
   const ai = getAIClient();
   
@@ -57,6 +64,10 @@ export const generateContentWithImage = async (
   
   while (attempts < maxAttempts) {
     try {
+      if (attempts > 0) {
+        onProgress?.(`Retrying generation (attempt ${attempts + 1})...`);
+      }
+      
       const response = await ai.models.generateContent({
         model,
         contents: { parts: [imagePart, textPart] }
@@ -104,13 +115,15 @@ export const generateContentWithImage = async (
  * @param imageFile1 - First image file to analyze
  * @param imageFile2 - Second image file to analyze
  * @param prompt - Text prompt for the AI
+ * @param onProgress - Optional progress callback
  * @returns AI response with generated content
  */
 export const generateContentWithTwoImages = async (
   model: string,
   imageFile1: File,
   imageFile2: File,
-  prompt: string
+  prompt: string,
+  onProgress?: ProgressCallback
 ): Promise<GenerateContentResponse> => {
   const ai = getAIClient();
   
@@ -129,6 +142,10 @@ export const generateContentWithTwoImages = async (
   
   while (attempts < maxAttempts) {
     try {
+      if (attempts > 0) {
+        onProgress?.(`Retrying generation (attempt ${attempts + 1})...`);
+      }
+      
       const response = await ai.models.generateContent({
         model,
         contents: { parts: [imagePart1, imagePart2, textPart] }

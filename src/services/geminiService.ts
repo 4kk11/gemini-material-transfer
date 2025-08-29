@@ -5,7 +5,7 @@
 
 import { fileToDataUrl } from '../utils/fileUtils';
 import { drawPurpleFillFromMask, drawRedMarkerFromPosition, createMaskFromMarkerPosition, drawRedBordersFromMask, cropSquareAroundMarker } from '../utils/canvasUtils';
-import { generateContentWithTwoImages, generateContentWithImage, extractImageFromResponse } from './aiService';
+import { generateContentWithTwoImages, generateContentWithImage, extractImageFromResponse, ProgressCallback } from './aiService';
 import { resizeImage } from '../utils/imageUtils';
 
 /**
@@ -110,18 +110,22 @@ const MATERIAL_APPLICATION_PROMPT = `
  * Generates a seamless texture from the specified material area
  * @param materialImage - The source material image file
  * @param materialMarkerPosition - Marker position defining the material area
+ * @param onProgress - Progress callback function
  * @returns Generated seamless texture as a File object
  */
 const generateSeamlessTexture = async (
   materialImage: File,
-  materialMarkerPosition: {x: number, y: number}
+  materialMarkerPosition: {x: number, y: number},
+  onProgress?: ProgressCallback
 ): Promise<File> => {
+  onProgress?.('Analyzing material characteristics...');
   console.log('Generating seamless texture from material...');
   
   // Create mask from marker position for material analysis
   const materialMask = await createMaskFromMarkerPosition(materialImage, materialMarkerPosition);
   
   // Create debug image with red borders (for UI) and prepare cropped input for the model
+  onProgress?.('Preparing material region for analysis...');
   const redBorderedImage = await drawRedBordersFromMask(materialImage, materialMask);
   let cropped = await cropSquareAroundMarker(materialImage, materialMarkerPosition, 0.45);
   let resizedImage = await resizeImage(cropped, 1024);
@@ -135,6 +139,7 @@ const generateSeamlessTexture = async (
         'gemini-2.5-flash-image-preview',
         resizedImage,
         SEAMLESS_TEXTURE_GENERATION_PROMPT,
+        onProgress
       );
       const extracted = extractImageFromResponse(response);
       dataUrl = extracted.dataUrl;
@@ -167,6 +172,7 @@ const generateSeamlessTexture = async (
   }
   
   const textureFile = new File([arrayBuffer], 'seamless-texture.png', { type: mimeType });
+  onProgress?.('Seamless texture generated successfully');
   console.log('Seamless texture generated successfully');
   
   return textureFile;
@@ -214,8 +220,10 @@ export const applyMaterial = async (
   materialImage: File,
   materialMarkerPosition: {x: number, y: number} | null,
   sceneImage: File,
-  sceneMask: string
+  sceneMask: string,
+  onProgress?: ProgressCallback
 ): Promise<MaterialTransferResult> => {
+  onProgress?.('Starting material transfer process...');
   console.log('Starting material transfer process...');
   
   if (!materialMarkerPosition) {
@@ -223,6 +231,7 @@ export const applyMaterial = async (
   }
   
   // Create debug images - red marker for material, purple fill for scene
+  onProgress?.('Creating debug visualization images...');
   console.log('Creating debug images...');
   const [materialRedMarker, scenePurpleFilled] = await Promise.all([
     drawRedMarkerFromPosition(materialImage, materialMarkerPosition),
@@ -236,13 +245,15 @@ export const applyMaterial = async (
   ]);
   
   // Stage 1: Generate seamless texture from material
+  onProgress?.('Stage 1: Generating seamless texture from material...');
   console.log('Generating seamless texture from material...');
-  const seamlessTexture = await generateSeamlessTexture(materialImage, materialMarkerPosition);
+  const seamlessTexture = await generateSeamlessTexture(materialImage, materialMarkerPosition, onProgress);
   
   // Convert seamless texture to data URL for debug display
   const seamlessTextureUrl = await fileToDataUrl(seamlessTexture);
 
   // Stage 2: Apply texture to purple-filled areas in scene
+  onProgress?.('Stage 2: Applying texture to scene...');
   console.log('Applying texture to scene...');
   const debugImageUrl = await fileToDataUrl(sceneImage);
   // Add timestamp to make prompt more unique
@@ -250,22 +261,28 @@ export const applyMaterial = async (
   const finalPrompt = MATERIAL_APPLICATION_PROMPT + `\n\n[Process ID: ${timestamp}]`;
 
   // Generate the final image using AI with texture and purple-filled scene
+  onProgress?.('Generating final image with texture applied...');
   console.log('Generating final image with texture applied...');
   const response = await generateContentWithTwoImages(
     'gemini-2.5-flash-image-preview',
     seamlessTexture,
     scenePurpleFilled,
-    finalPrompt
+    finalPrompt,
+    onProgress
   );
 
   console.log('Received response from model.');
   
   // Extract the generated image from AI response
+  onProgress?.('Processing generated result...');
   const { dataUrl: generatedSquareImageUrl } = extractImageFromResponse(response);
   
   // Crop the square generated image back to original scene aspect ratio
+  onProgress?.('Finalizing result...');
   console.log('Cropping generated image to original scene aspect ratio...');
   const finalImageUrl = generatedSquareImageUrl;
+  
+  onProgress?.('Material transfer completed successfully!');
   
   return {
     finalImageUrl,
