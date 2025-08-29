@@ -187,7 +187,16 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         onDebugClick();
+                    }}
+                    onMouseDown={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }}
+                    onTouchStart={(e: React.TouchEvent) => {
+                        e.stopPropagation();
+                        e.preventDefault();
                     }}
                     className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-opacity-80 transition-all z-20 shadow-lg"
                     aria-label="Show debug view"
@@ -211,7 +220,7 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
       {imageUrl && (
         <div className="w-full mt-4 flex justify-end">
           <button
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               onClearImage?.();
             }}

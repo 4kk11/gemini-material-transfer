@@ -74,8 +74,8 @@ const DebugModal: React.FC<DebugModalProps> = ({
         <div className="flex flex-col gap-4 overflow-y-auto">
           {materialImageUrl && showMaterialSection && (
             <div>
-              <h3 className="text-lg font-bold text-zinc-800 mb-2">Material Source (Red Border)</h3>
-              <p className="text-zinc-600 mb-2">The material extraction area marked with red border.</p>
+              <h3 className="text-lg font-bold text-zinc-800 mb-2">Input Image</h3>
+              <p className="text-zinc-600 mb-2">The input image used for processing.</p>
               <div className="rounded-lg overflow-hidden bg-zinc-100">
                   <img src={materialImageUrl} alt="Debug view of marked material" className="w-full h-full object-contain" />
               </div>
@@ -83,8 +83,10 @@ const DebugModal: React.FC<DebugModalProps> = ({
           )}
           
           <div>
+            <h3 className="text-lg font-bold text-zinc-800 mb-2">Output Image</h3>
+            <p className="text-zinc-600 mb-2">The AI-generated output image.</p>
             <div className="rounded-lg overflow-hidden bg-zinc-100">
-                <img src={imageUrl} alt="Debug view" className="w-full h-full object-contain" />
+                <img src={imageUrl} alt="Generated output" className="w-full h-full object-contain" />
             </div>
           </div>
           
@@ -99,7 +101,7 @@ const DebugModal: React.FC<DebugModalProps> = ({
           
           {prompt && showPromptSection && (
             <div>
-                <h3 className="text-lg font-bold text-zinc-800 mb-2">Final Prompt to Image Model</h3>
+                <h3 className="text-lg font-bold text-zinc-800 mb-2">Input Prompt</h3>
                 <pre className="bg-zinc-100 text-zinc-700 p-4 rounded-lg text-xs whitespace-pre-wrap">
                     <code>{prompt}</code>
                 </pre>

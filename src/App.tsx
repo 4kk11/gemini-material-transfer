@@ -70,7 +70,10 @@ const App: React.FC = () => {
         materialDebugUrl: result.materialDebugUrl,
         sceneDebugUrl: result.sceneDebugUrl,
         finalPrompt: result.finalPrompt,
-        seamlessTextureUrl: result.seamlessTextureUrl
+        seamlessTextureUrl: result.seamlessTextureUrl,
+        materialInputImageUrl: result.materialInputImageUrl,
+        seamlessTexturePrompt: result.seamlessTexturePrompt,
+        resultDebugInputImageUrl: result.resultDebugInputImageUrl
       });
 
     } catch (err) {
@@ -190,6 +193,8 @@ const App: React.FC = () => {
         onCloseMaterialDebugModal={() => uiState.setIsMaterialDebugModalOpen(false)}
         materialDebugUrl={uiState.materialDebugUrl}
         seamlessTextureUrl={uiState.seamlessTextureUrl}
+        materialInputImageUrl={uiState.materialInputImageUrl}
+        seamlessTexturePrompt={uiState.seamlessTexturePrompt}
         isSceneDebugModalOpen={uiState.isSceneDebugModalOpen}
         onCloseSceneDebugModal={() => uiState.setIsSceneDebugModalOpen(false)}
         sceneDebugUrl={uiState.sceneDebugUrl}
@@ -197,6 +202,7 @@ const App: React.FC = () => {
         isResultDebugModalOpen={uiState.isResultDebugModalOpen}
         onCloseResultDebugModal={() => uiState.setIsResultDebugModalOpen(false)}
         resultImageUrl={imageState.resultImageUrl}
+        resultDebugInputImageUrl={uiState.resultDebugInputImageUrl}
         debugPrompt={uiState.debugPrompt}
       />
     </div>

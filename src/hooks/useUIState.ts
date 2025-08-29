@@ -26,6 +26,9 @@ export const useUIState = () => {
   const [sceneDebugUrl, setSceneDebugUrl] = useState<string | null>(null);
   const [debugPrompt, setDebugPrompt] = useState<string | null>(null);
   const [seamlessTextureUrl, setSeamlessTextureUrl] = useState<string | null>(null);
+  const [materialInputImageUrl, setMaterialInputImageUrl] = useState<string | null>(null);
+  const [seamlessTexturePrompt, setSeamlessTexturePrompt] = useState<string | null>(null);
+  const [resultDebugInputImageUrl, setResultDebugInputImageUrl] = useState<string | null>(null);
   const [sceneAreaDescription, setSceneAreaDescription] = useState<string | null>(null);
 
   /**
@@ -67,6 +70,9 @@ export const useUIState = () => {
     setSceneDebugUrl(null);
     setDebugPrompt(null);
     setSeamlessTextureUrl(null);
+    setMaterialInputImageUrl(null);
+    setSeamlessTexturePrompt(null);
+    setResultDebugInputImageUrl(null);
     setSceneAreaDescription(null);
   }, []);
 
@@ -79,12 +85,18 @@ export const useUIState = () => {
     sceneDebugUrl?: string;
     finalPrompt?: string;
     seamlessTextureUrl?: string;
+    materialInputImageUrl?: string;
+    seamlessTexturePrompt?: string;
+    resultDebugInputImageUrl?: string;
   }) => {
     setDebugImageUrl(data.debugImageUrl || null);
     setMaterialDebugUrl(data.materialDebugUrl || null);
     setSceneDebugUrl(data.sceneDebugUrl || null);
     setDebugPrompt(data.finalPrompt || null);
     setSeamlessTextureUrl(data.seamlessTextureUrl || null);
+    setMaterialInputImageUrl(data.materialInputImageUrl || null);
+    setSeamlessTexturePrompt(data.seamlessTexturePrompt || null);
+    setResultDebugInputImageUrl(data.resultDebugInputImageUrl || null);
     setSceneAreaDescription(null);
   }, []);
 
@@ -139,6 +151,9 @@ export const useUIState = () => {
     sceneDebugUrl,
     debugPrompt,
     seamlessTextureUrl,
+    materialInputImageUrl,
+    seamlessTexturePrompt,
+    resultDebugInputImageUrl,
     sceneAreaDescription,
     
     // Loading actions

@@ -169,6 +169,12 @@ export interface MaterialTransferResult {
   sceneDebugUrl?: string;
   /** Generated seamless texture for debug display */
   seamlessTextureUrl?: string;
+  /** Input image with red marker for material debug modal */
+  materialInputImageUrl?: string;
+  /** Prompt used for seamless texture generation */
+  seamlessTexturePrompt?: string;
+  /** Input image for result debug modal (purple-filled scene) */
+  resultDebugInputImageUrl?: string;
 }
 
 /**
@@ -246,6 +252,9 @@ export const applyMaterial = async (
     finalPrompt,
     materialDebugUrl,
     sceneDebugUrl,
-    seamlessTextureUrl
+    seamlessTextureUrl,
+    materialInputImageUrl: materialDebugUrl,
+    seamlessTexturePrompt: SEAMLESS_TEXTURE_GENERATION_PROMPT,
+    resultDebugInputImageUrl: sceneDebugUrl
   };
 };
