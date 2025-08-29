@@ -17,6 +17,7 @@ import DebugModals from './components/DebugModals';
 import { useImageState } from './hooks/useImageState';
 import { useUIState } from './hooks/useUIState';
 import { applyMaterial } from './services/geminiService';
+import { RecitationError } from './services/aiService';
 
 /**
  * Main application component for material transfer functionality
@@ -77,8 +78,17 @@ const App: React.FC = () => {
       });
 
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      uiState.setErrorMessage(`Failed to generate the image. ${errorMessage}`);
+      let errorMessage: string;
+      
+      if (err instanceof RecitationError) {
+        // Special handling for RECITATION errors with helpful advice
+        errorMessage = `🚫 RECITATION Error\n\n${err.message}\n\n💡 Solutions:\n• Try more specific and detailed instructions\n• Use different images or materials\n• Change image composition or angle\n• Wait a moment and try again`;
+      } else {
+        errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        errorMessage = `Failed to generate the image. ${errorMessage}`;
+      }
+      
+      uiState.setErrorMessage(errorMessage);
       console.error(err);
     } finally {
       uiState.stopLoading();

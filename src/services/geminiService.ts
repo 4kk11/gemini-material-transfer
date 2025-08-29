@@ -4,7 +4,7 @@
  */
 
 import { fileToDataUrl } from '../utils/fileUtils';
-import { drawPurpleFillFromMask, drawRedMarkerFromPosition, createMaskFromMarkerPosition, drawRedBordersFromMask } from '../utils/canvasUtils';
+import { drawPurpleFillFromMask, drawRedMarkerFromPosition, createMaskFromMarkerPosition, drawRedBordersFromMask, cropSquareAroundMarker } from '../utils/canvasUtils';
 import { generateContentWithTwoImages, generateContentWithImage, extractImageFromResponse } from './aiService';
 import { resizeImage } from '../utils/imageUtils';
 
@@ -22,40 +22,40 @@ import { resizeImage } from '../utils/imageUtils';
 const SEAMLESS_TEXTURE_GENERATION_PROMPT = `
 # シームレステクスチャ生成システム
 
-あなたは高精度なテクスチャ生成の専門家です。赤いマーカーで指定された材料から、シームレスで繰り返し可能なテクスチャを生成します。
+あなたは高精度なテクスチャ生成の専門家です。赤いマーカー周辺の材料特徴を分析し、シームレスで繰り返し可能な「新規のオリジナル」テクスチャを合成します。
 
 ## 入力
 
 ### 画像
-- 赤いマーカーで材料が指定された画像が提供されます
-- 赤いマーカー周辺の材料特性を基にテクスチャを生成してください
+- 赤いマーカーで材料を示した画像が提供されます
+- 黒い背景などの不要部分は無視し、材料の特徴のみを抽出
 
 ## テクスチャ生成の要件
 
 ### 基本要件
-- **シームレス**: 上下左右がつながる繰り返し可能なパターン
-- **高解像度**: 細部まで鮮明で自然な質感
-- **正方形**: 1:1のアスペクト比での出力
+- シームレス: 上下左右が自然につながる繰り返し可能パターン
+- 高解像度: 細部まで鮮明で自然な質感
+- 正方形: 1:1のアスペクト比
 
-### 材料特性の再現
-- **色調**: 元材料の正確な色味と濃淡
-- **質感**: 表面の粗さ、滑らかさ、光沢感
-- **パターン**: 木目、織り、金属の筋、石の模様など特徴的なパターン
-- **光学特性**: 反射率、透明度、艶の有無を適切に表現
+### 材料特性の再構成
+- 色調: 元材料の色味・濃淡の傾向を再構成（直接複製はしない）
+- 質感: 粗さ/滑らかさ/光沢感を表現（トレース禁止）
+- パターン: 木目・織り・石目などの特徴を抽出し新規に構成
+- 光学特性: 反射や艶の傾向を適切に反映
 
 ### 品質要件
-- 継ぎ目が目立たない自然な繋がり
-- 一定の密度とスケールでのパターン分布
-- 元材料の物理的特性を忠実に再現
+- 継ぎ目が見えない自然な繋がり
+- スケールと密度の一貫性
+- 現実的で自然な見た目
 
 ## 禁止事項
-- 単純な画像の切り取りや拡大
-- 継ぎ目が見える不自然な繰り返し
-- 元材料と異なる色調や質感
+- 入力画像の直接的な複製やトレース
+- 単純な切り取り・拡大
+- 不自然な繰り返しや継ぎ目
+- 画像を生成せずに処理を終了すること
 
 ## 出力
-
-シームレスなテクスチャ画像のみを生成してください。説明文やコメントは一切不要です。
+- シームレスな正方形テクスチャ画像のみを生成。テキストは一切不要。
 `;
 
 /**
@@ -94,10 +94,12 @@ const MATERIAL_APPLICATION_PROMPT = `
 - テクスチャの継ぎ目が見えない自然な配置
 
 ### 禁止事項
+- 入力画像の直接的な複製やトレース
 - 単純な画像貼り付けや重ね合わせ
 - テクスチャを適用せずに元シーンを返すこと
 - 指定された領域以外の部分を変更すること
 - テクスチャの不自然な繰り返しや歪み
+- 画像を生成せずに処理を終了すること
 
 ## 出力
 
@@ -119,21 +121,39 @@ const generateSeamlessTexture = async (
   // Create mask from marker position for material analysis
   const materialMask = await createMaskFromMarkerPosition(materialImage, materialMarkerPosition);
   
-  // Create debug image with red borders around the masked area
+  // Create debug image with red borders (for UI) and prepare cropped input for the model
   const redBorderedImage = await drawRedBordersFromMask(materialImage, materialMask);
-  
-  // Resize to standard dimension for AI processing
-  const resizedImage = await resizeImage(redBorderedImage, 1024);
-  
-  // Generate seamless texture using AI
-  const response = await generateContentWithImage(
-    'gemini-2.5-flash-image-preview',
-    resizedImage,
-    SEAMLESS_TEXTURE_GENERATION_PROMPT
-  );
-  
-  // Extract the generated texture image from AI response
-  const { dataUrl } = extractImageFromResponse(response);
+  let cropped = await cropSquareAroundMarker(materialImage, materialMarkerPosition, 0.45);
+  let resizedImage = await resizeImage(cropped, 1024);
+  console.log('Prepared cropped image for texture generation:', resizedImage);
+
+  // Try generation with progressive mitigation if RECITATION occurs
+  let dataUrl: string | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await generateContentWithImage(
+        'gemini-2.5-flash-image-preview',
+        resizedImage,
+        SEAMLESS_TEXTURE_GENERATION_PROMPT,
+      );
+      const extracted = extractImageFromResponse(response);
+      dataUrl = extracted.dataUrl;
+      break;
+    } catch (err: any) {
+      const msg = (err as Error)?.message || '';
+      console.warn('Seamless texture generation attempt failed:', msg);
+      if (msg === 'RECITATION') {
+        const frac = Math.max(0.2, 0.45 - (attempt + 1) * 0.1);
+        cropped = await cropSquareAroundMarker(materialImage, materialMarkerPosition, frac);
+        resizedImage = await resizeImage(cropped, 1024);
+        continue;
+      }
+      throw err;
+    }
+  }
+  if (!dataUrl) {
+    throw new Error('The AI model did not return an image after retries.');
+  }
   
   // Convert data URL back to File for use in subsequent AI calls
   const base64Data = dataUrl.split(',')[1];
@@ -225,7 +245,9 @@ export const applyMaterial = async (
   // Stage 2: Apply texture to purple-filled areas in scene
   console.log('Applying texture to scene...');
   const debugImageUrl = await fileToDataUrl(sceneImage);
-  const finalPrompt = MATERIAL_APPLICATION_PROMPT;
+  // Add timestamp to make prompt more unique
+  const timestamp = Date.now();
+  const finalPrompt = MATERIAL_APPLICATION_PROMPT + `\n\n[Process ID: ${timestamp}]`;
 
   // Generate the final image using AI with texture and purple-filled scene
   console.log('Generating final image with texture applied...');

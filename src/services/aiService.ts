@@ -6,6 +6,14 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { fileToPart } from '../utils/fileUtils';
 
+// Custom error class for RECITATION errors
+export class RecitationError extends Error {
+  constructor(message: string, public attempts: number) {
+    super(message);
+    this.name = 'RecitationError';
+  }
+}
+
 /**
  * AI service for interacting with Google's Gemini API
  */
@@ -35,15 +43,59 @@ export const generateContentWithImage = async (
 ): Promise<GenerateContentResponse> => {
   const ai = getAIClient();
   
-  const textPart = { text: prompt };
+  // Add random seed and explicit originality nudge to reduce RECITATION
+  const randomSeed = Math.random().toString(36).substring(7);
+  const timestamp = Date.now();
+  const uniquePrompt = `${prompt}\n\n[重要: 入力画像の直接複製は禁止。必ずオリジナルに合成してください]\n[Session: ${randomSeed}_${timestamp}]`;
+  
+  const textPart = { text: uniquePrompt };
   const imagePart = await fileToPart(imageFile);
   
-  const response = await ai.models.generateContent({
-    model,
-    contents: { parts: [imagePart, textPart] },
-  });
+  // Retry logic for RECITATION errors
+  let attempts = 0;
+  const maxAttempts = 5;
   
-  return response;
+  while (attempts < maxAttempts) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: { parts: [imagePart, textPart] }
+      });
+      
+      // Check if response contains RECITATION error
+      const candidate = response.candidates?.[0];
+      if (candidate?.finishReason === 'RECITATION') {
+        console.warn(`RECITATION detected on attempt ${attempts + 1}/${maxAttempts}`);
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw new RecitationError(
+            `The AI model stopped processing because the content might be too similar to existing data. Please try using more specific and creative instructions, or try different images. (${maxAttempts} attempts made)`,
+            attempts
+          );
+        }
+        // Add more uniqueness to avoid RECITATION
+        const salt = Math.random().toString(36).slice(2, 8);
+        const creativity = Math.random().toString(36).slice(2, 8);
+        textPart.text = `${uniquePrompt}\n[創造性強化: ${salt}]\n[独自性確保: ${creativity}]`;
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      console.error(`Error on attempt ${attempts + 1}:`, error);
+      attempts++;
+      if (attempts >= maxAttempts) {
+        throw error;
+      }
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  
+  throw new RecitationError(
+    `Failed to generate content. Unable to create appropriate content after ${maxAttempts} attempts.`,
+    maxAttempts
+  );
 };
 
 /**
@@ -62,16 +114,52 @@ export const generateContentWithTwoImages = async (
 ): Promise<GenerateContentResponse> => {
   const ai = getAIClient();
   
-  const textPart = { text: prompt };
+  // Add random seed and explicit originality nudge to reduce RECITATION
+  const randomSeed = Math.random().toString(36).substring(7);
+  const timestamp = Date.now();
+  const uniquePrompt = `${prompt}\n\n[重要: 入力画像の直接複製は禁止。必ずオリジナルに合成してください]\n[Session: ${randomSeed}_${timestamp}]`;
+  
+  const textPart = { text: uniquePrompt };
   const imagePart1 = await fileToPart(imageFile1);
   const imagePart2 = await fileToPart(imageFile2);
   
-  const response = await ai.models.generateContent({
-    model,
-    contents: { parts: [imagePart1, imagePart2, textPart] },
-  });
+  // Retry logic for RECITATION errors
+  let attempts = 0;
+  const maxAttempts = 3;
   
-  return response;
+  while (attempts < maxAttempts) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: { parts: [imagePart1, imagePart2, textPart] }
+      });
+      
+      // Check if response contains RECITATION error
+      const candidate = response.candidates?.[0];
+      if (candidate?.finishReason === 'RECITATION') {
+        console.warn(`RECITATION on attempt ${attempts + 1}, retrying with smaller context...`);
+        attempts++;
+        const salt = Math.random().toString(36).slice(2, 6);
+        (textPart as any).text = `${uniquePrompt}\n[OriginalitySalt:${salt}]`;
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      console.error(`Error on attempt ${attempts + 1}:`, error);
+      attempts++;
+      if (attempts >= maxAttempts) {
+        throw error;
+      }
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  
+  throw new RecitationError(
+    `Failed to generate content. Unable to create appropriate content after ${maxAttempts} attempts.`,
+    maxAttempts
+  );
 };
 
 /**
@@ -95,6 +183,13 @@ export const extractTextFromResponse = (response: GenerateContentResponse): stri
  * @throws Error if response contains no image data
  */
 export const extractImageFromResponse = (response: GenerateContentResponse): { dataUrl: string; mimeType: string } => {
+  const finish = (response.candidates?.[0]?.finishReason as unknown as string) || '';
+  if (finish === 'RECITATION') {
+    throw new RecitationError(
+      'The AI model stopped processing because the content might be too similar to existing data.',
+      1
+    );
+  }
   const imagePartFromResponse = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
 
   if (!imagePartFromResponse?.inlineData) {

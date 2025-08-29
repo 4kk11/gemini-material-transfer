@@ -285,3 +285,59 @@ export const createMaskFromMarkerPosition = async (
   });
 };
 
+/**
+ * Crops a square region around the marker position from the base image.
+ * The crop size is a fraction of the shortest image side and clamped to image bounds.
+ * @param baseImageFile - The base image file
+ * @param markerPosition - Position {x, y} for the crop center
+ * @param sizeFraction - Fraction of min(width,height) to use as crop size (0.1 - 1.0)
+ * @returns Promise resolving to File containing the cropped square image (PNG)
+ */
+export const cropSquareAroundMarker = async (
+  baseImageFile: File,
+  markerPosition: { x: number; y: number },
+  sizeFraction = 0.4
+): Promise<File> => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const img = new Image();
+      img.src = URL.createObjectURL(baseImageFile);
+      await img.decode();
+      URL.revokeObjectURL(img.src);
+
+      const minSide = Math.min(img.naturalWidth, img.naturalHeight);
+      const clampedFraction = Math.min(1, Math.max(0.1, sizeFraction));
+      const cropSize = Math.round(minSide * clampedFraction);
+
+      let x = Math.round(markerPosition.x - cropSize / 2);
+      let y = Math.round(markerPosition.y - cropSize / 2);
+
+      // Clamp to image bounds
+      x = Math.max(0, Math.min(x, img.naturalWidth - cropSize));
+      y = Math.max(0, Math.min(y, img.naturalHeight - cropSize));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = cropSize;
+      canvas.height = cropSize;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Could not get canvas context.'));
+
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, x, y, cropSize, cropSize, 0, 0, cropSize, cropSize);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(new File([blob], 'cropped-material.png', { type: 'image/png' }));
+          } else {
+            reject(new Error('Failed to create blob from canvas'));
+          }
+        },
+        'image/png',
+        0.95
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
