@@ -28,7 +28,7 @@ interface BaseImageUploaderProps {
 }
 
 const UploadIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-zinc-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-zinc-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
     </svg>
 );
@@ -147,15 +147,15 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
       }
   }, [onFileSelect]);
   
-  const uploaderClasses = `w-full aspect-video bg-zinc-100 border-2 border-dashed rounded-lg flex items-center justify-center transition-all duration-300 relative overflow-hidden ${
-      isDraggingOver ? 'border-blue-500 bg-blue-50'
-    : imageUrl ? 'border-zinc-400'
-    : 'border-zinc-300 hover:border-blue-500 cursor-pointer'
+  const uploaderClasses = `w-full aspect-video bg-zinc-800 border-2 border-dashed rounded-lg flex items-center justify-center transition-all duration-300 relative overflow-hidden ${
+      isDraggingOver ? 'border-blue-400 bg-blue-900/20'
+    : imageUrl ? 'border-zinc-600'
+    : 'border-zinc-600 hover:border-blue-400 cursor-pointer'
   }`;
 
   return (
     <div className="flex flex-col items-center w-full">
-      {label && <h3 className="text-xl font-semibold mb-4 text-zinc-700">{label}</h3>}
+      {label && <h3 className="text-xl font-semibold mb-4 text-zinc-200">{label}</h3>}
 
       <div
         ref={containerRef}
@@ -212,7 +212,7 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
             )}
           </>
         ) : (
-          <div className="text-center text-zinc-500 p-4">
+          <div className="text-center text-zinc-400 p-4">
             <UploadIcon />
             <p>Click to upload or drag & drop</p>
           </div>
@@ -230,7 +230,7 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
               e.stopPropagation();
               onClearImage?.();
             }}
-            className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
+            className="bg-zinc-600 hover:bg-zinc-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
             aria-label="Clear image"
           >
             Clear Image
@@ -239,7 +239,7 @@ const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({
       )}
 
       {fileTypeError && (
-        <div className="w-full mt-2 text-sm text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-lg p-3 flex items-center animate-fade-in" role="alert">
+        <div className="w-full mt-2 text-sm text-yellow-300 bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 flex items-center animate-fade-in" role="alert">
             <WarningIcon />
             <span>{fileTypeError}</span>
         </div>

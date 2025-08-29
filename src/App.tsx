@@ -186,7 +186,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-zinc-800 flex items-center justify-center p-4 md:p-8">
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 flex items-center justify-center p-4 md:p-8">
       <div className="flex flex-col items-center gap-8 w-full">
         <Header />
         <main className="w-full">

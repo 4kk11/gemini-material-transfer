@@ -24,10 +24,10 @@ const ResultSection: React.FC<ResultSectionProps> = ({
   return (
     <div className="mt-12 animate-fade-in">
       <div className="text-center mb-6">
-        <h2 className="text-4xl font-extrabold text-zinc-800">Generated Result</h2>
+        <h2 className="text-4xl font-extrabold text-zinc-100">Generated Result</h2>
       </div>
       
-      <div className="w-full max-w-4xl mx-auto bg-zinc-100 border-2 border-zinc-200 rounded-lg overflow-hidden shadow-lg relative">
+      <div className="w-full max-w-4xl mx-auto bg-zinc-800 border-2 border-zinc-700 rounded-lg overflow-hidden shadow-lg relative">
         <img 
           src={resultImageUrl} 
           alt="Generated scene" 

@@ -32,8 +32,8 @@ const ActionSection: React.FC<ActionSectionProps> = ({
     <div className="text-center mt-10 min-h-[8rem] flex flex-col justify-center items-center">
       {/* Error message display */}
       {error && (
-        <div className="animate-fade-in p-4 rounded-lg max-w-2xl mx-auto bg-red-50 border border-red-200 mb-4">
-          <div className={`text-sm ${error.includes('RECITATION') ? 'text-orange-700' : 'text-red-700'}`}>
+        <div className="animate-fade-in p-4 rounded-lg max-w-2xl mx-auto bg-red-900/20 border border-red-800 mb-4">
+          <div className={`text-sm ${error.includes('RECITATION') ? 'text-orange-300' : 'text-red-300'}`}>
             {error.split('\\n').map((line, index) => (
               <div key={index} className={`${
                 line.startsWith('💡') || line.startsWith('•') 
@@ -51,13 +51,13 @@ const ActionSection: React.FC<ActionSectionProps> = ({
       {isLoading ? (
         <div className="animate-fade-in">
           <Spinner />
-          <p className="text-xl mt-4 text-zinc-600 transition-opacity duration-500">
+          <p className="text-xl mt-4 text-zinc-300 transition-opacity duration-500">
             {loadingMessage}
           </p>
         </div>
       ) : areImagesUploaded ? (
         <div className="flex flex-col items-center gap-4 animate-fade-in">
-          <p className="text-zinc-500">
+          <p className="text-zinc-400">
             <span className="font-bold">Step 1:</span> Use the brush on the Product image to select a material.
             <br />
             <span className="font-bold">Step 2:</span> Use the brush on the Scene image to select the area to apply it to.
@@ -72,10 +72,10 @@ const ActionSection: React.FC<ActionSectionProps> = ({
         </div>
       ) : (
         <div>
-          <p className="text-zinc-500 animate-fade-in">
+          <p className="text-zinc-400 animate-fade-in">
             Upload a product image and a scene image to begin.
           </p>
-          <p className="text-zinc-500 animate-fade-in mt-2">
+          <p className="text-zinc-400 animate-fade-in mt-2">
             Or click{' '}
             <button
               onClick={onInstantStart}

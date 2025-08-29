@@ -122,7 +122,7 @@ const MarkerImageUploader: React.FC<MarkerImageUploaderProps> = (props) => {
   const controls = imageUrl && onMarkerUpdate ? (
     <div className="w-full mt-4 flex items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <div className="bg-zinc-200 text-zinc-800 text-sm font-semibold px-4 py-2 rounded-md">
+        <div className="bg-zinc-700 text-zinc-100 text-sm font-semibold px-4 py-2 rounded-md">
           <span>Click to place marker</span>
         </div>
       </div>

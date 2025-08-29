@@ -131,7 +131,7 @@ const BrushImageUploader: React.FC<BrushImageUploaderProps> = (props) => {
   const controls = imageUrl && onMaskUpdate ? (
     <div className="w-full mt-4 flex items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <div className="bg-zinc-200 text-zinc-800 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2">
+        <div className="bg-zinc-700 text-zinc-100 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2">
           <span>Brush:</span>
           <input
             type="range"
@@ -139,7 +139,7 @@ const BrushImageUploader: React.FC<BrushImageUploaderProps> = (props) => {
             max="50"
             value={brushSize}
             onChange={(e) => setBrushSize(Number(e.target.value))}
-            className="w-16 h-1 bg-gray-300 rounded-full appearance-none cursor-pointer"
+            className="w-16 h-1 bg-zinc-500 rounded-full appearance-none cursor-pointer"
           />
           <span className="text-xs">{brushSize}</span>
         </div>

@@ -54,46 +54,46 @@ const DebugModal: React.FC<DebugModalProps> = ({
       role="dialog"
     >
       <div 
-        className="bg-white rounded-xl shadow-2xl w-full max-w-4xl p-6 md:p-8 relative transform transition-all flex flex-col"
+        className="bg-zinc-800 rounded-xl shadow-2xl w-full max-w-4xl p-6 md:p-8 relative transform transition-all flex flex-col"
         style={{ maxHeight: '90vh' }}
         onClick={handleModalContentClick}
         role="document"
       >
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-800 transition-colors z-10"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 transition-colors z-10"
           aria-label="Close modal"
         >
           <CloseIcon />
         </button>
         <div className="text-center mb-4 flex-shrink-0">
-          <h2 className="text-2xl font-extrabold text-zinc-800">{title}</h2>
-          {description && <p className="text-zinc-600 mt-1">{description}</p>}
+          <h2 className="text-2xl font-extrabold text-zinc-100">{title}</h2>
+          {description && <p className="text-zinc-300 mt-1">{description}</p>}
         </div>
         
         <div className="flex flex-col gap-4 overflow-y-auto">
           {materialImageUrl && showMaterialSection && (
             <div>
-              <h3 className="text-lg font-bold text-zinc-800 mb-2">Input Image</h3>
-              <p className="text-zinc-600 mb-2">The input image used for processing.</p>
-              <div className="rounded-lg overflow-hidden bg-zinc-100">
+              <h3 className="text-lg font-bold text-zinc-100 mb-2">Input Image</h3>
+              <p className="text-zinc-300 mb-2">The input image used for processing.</p>
+              <div className="rounded-lg overflow-hidden bg-zinc-700">
                   <img src={materialImageUrl} alt="Debug view of marked material" className="w-full h-full object-contain" />
               </div>
             </div>
           )}
           
           <div>
-            <h3 className="text-lg font-bold text-zinc-800 mb-2">Output Image</h3>
-            <p className="text-zinc-600 mb-2">The AI-generated output image.</p>
-            <div className="rounded-lg overflow-hidden bg-zinc-100">
+            <h3 className="text-lg font-bold text-zinc-100 mb-2">Output Image</h3>
+            <p className="text-zinc-300 mb-2">The AI-generated output image.</p>
+            <div className="rounded-lg overflow-hidden bg-zinc-700">
                 <img src={imageUrl} alt="Generated output" className="w-full h-full object-contain" />
             </div>
           </div>
           
           {aiResponse && (
             <div>
-                <h3 className="text-lg font-bold text-zinc-800 mb-2">{aiResponseTitle}</h3>
-                <pre className="bg-blue-50 border border-blue-200 text-zinc-700 p-4 rounded-lg text-xs whitespace-pre-wrap">
+                <h3 className="text-lg font-bold text-zinc-100 mb-2">{aiResponseTitle}</h3>
+                <pre className="bg-blue-900/20 border border-blue-800 text-zinc-200 p-4 rounded-lg text-xs whitespace-pre-wrap">
                     <code>{aiResponse}</code>
                 </pre>
             </div>
@@ -101,8 +101,8 @@ const DebugModal: React.FC<DebugModalProps> = ({
           
           {prompt && showPromptSection && (
             <div>
-                <h3 className="text-lg font-bold text-zinc-800 mb-2">Input Prompt</h3>
-                <pre className="bg-zinc-100 text-zinc-700 p-4 rounded-lg text-xs whitespace-pre-wrap">
+                <h3 className="text-lg font-bold text-zinc-100 mb-2">Input Prompt</h3>
+                <pre className="bg-zinc-700 text-zinc-200 p-4 rounded-lg text-xs whitespace-pre-wrap">
                     <code>{prompt}</code>
                 </pre>
             </div>
