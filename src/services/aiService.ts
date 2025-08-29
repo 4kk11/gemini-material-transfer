@@ -98,6 +98,7 @@ export const extractImageFromResponse = (response: GenerateContentResponse): { d
   const imagePartFromResponse = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
 
   if (!imagePartFromResponse?.inlineData) {
+    console.error('AI response does not contain image data:', response);
     throw new Error("The AI model did not return an image. Please try again.");
   }
 

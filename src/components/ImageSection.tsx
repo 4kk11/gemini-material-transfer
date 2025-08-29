@@ -53,7 +53,7 @@ const ImageSection: React.FC<ImageSectionProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
       <div className="flex flex-col">
         <h2 className="text-2xl font-extrabold text-center mb-5 text-zinc-800">
-          Product (Material Source)
+          Material Source
         </h2>
         <MarkerImageUploader 
           id="product-uploader"
@@ -68,7 +68,7 @@ const ImageSection: React.FC<ImageSectionProps> = ({
       
       <div className="flex flex-col">
         <h2 className="text-2xl font-extrabold text-center mb-5 text-zinc-800">
-          Scene (Target)
+          Target
         </h2>
         <BrushImageUploader 
           id="scene-uploader"
