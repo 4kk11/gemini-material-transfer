@@ -5,7 +5,7 @@
 
 import React, { useCallback, useRef, useState, useEffect } from 'react';
 
-interface ImageUploaderProps {
+interface BaseImageUploaderProps {
   id: string;
   label?: string;
   onFileSelect: (file: File) => void;
@@ -15,6 +15,16 @@ interface ImageUploaderProps {
   showDebugButton?: boolean;
   onDebugClick?: () => void;
   onClearImage?: () => void;
+  children?: React.ReactNode;
+  maskInteractionHandlers?: {
+    onMouseDown?: (e: React.MouseEvent) => void;
+    onMouseMove?: (e: React.MouseEvent) => void;
+    onMouseUp?: (e: React.MouseEvent) => void;
+    onMouseLeave?: (e: React.MouseEvent) => void;
+    onTouchStart?: (e: React.TouchEvent) => void;
+    onTouchMove?: (e: React.TouchEvent) => void;
+    onTouchEnd?: (e: React.TouchEvent) => void;
+  };
 }
 
 const UploadIcon: React.FC = () => (
@@ -29,7 +39,19 @@ const WarningIcon: React.FC = () => (
     </svg>
 );
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, imageUrl, maskUrl, onMaskUpdate, showDebugButton, onDebugClick, onClearImage }) => {
+const BaseImageUploader: React.FC<BaseImageUploaderProps> = ({ 
+  id, 
+  label, 
+  onFileSelect, 
+  imageUrl, 
+  maskUrl, 
+  onMaskUpdate, 
+  showDebugButton, 
+  onDebugClick, 
+  onClearImage, 
+  children,
+  maskInteractionHandlers 
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,9 +59,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [fileTypeError, setFileTypeError] = useState<string | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [brushSize, setBrushSize] = useState(20);
-  const lastPos = useRef<{x: number, y: number} | null>(null);
 
   useEffect(() => {
     if (!imageUrl) {
@@ -94,102 +113,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
       onFileSelect(file);
     }
   };
-  
-  const getScaledCoords = (clientX: number, clientY: number) => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    const img = imgRef.current;
-    if (!canvas || !container || !img) return null;
 
-    const containerRect = container.getBoundingClientRect();
-    const { naturalWidth, naturalHeight } = img;
-
-    // Calculate actual displayed image size with object-contain
-    const imgAspect = naturalWidth / naturalHeight;
-    const containerAspect = containerRect.width / containerRect.height;
-    
-    let actualDisplayWidth, actualDisplayHeight;
-    
-    if (imgAspect > containerAspect) {
-      // Image is wider, fit to width
-      actualDisplayWidth = containerRect.width;
-      actualDisplayHeight = containerRect.width / imgAspect;
-    } else {
-      // Image is taller, fit to height
-      actualDisplayHeight = containerRect.height;
-      actualDisplayWidth = containerRect.height * imgAspect;
-    }
-
-    const offsetX = (containerRect.width - actualDisplayWidth) / 2;
-    const offsetY = (containerRect.height - actualDisplayHeight) / 2;
-
-    const x = (clientX - containerRect.left - offsetX) / actualDisplayWidth * naturalWidth;
-    const y = (clientY - containerRect.top - offsetY) / actualDisplayHeight * naturalHeight;
-    
-    return { x, y };
-  };
-
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDrawing) return;
-    const nativeEvent = 'nativeEvent' in e ? e.nativeEvent : e;
-    const clientX = 'touches' in nativeEvent ? nativeEvent.touches[0].clientX : (nativeEvent as MouseEvent).clientX;
-    const clientY = 'touches' in nativeEvent ? nativeEvent.touches[0].clientY : (nativeEvent as MouseEvent).clientY;
-    
-    const coords = getScaledCoords(clientX, clientY);
-    if (!coords) return;
-    
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) return;
-    
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'white';
-    // Calculate actual display width for consistent brush size
-    const { naturalWidth, naturalHeight } = imgRef.current!;
-    const containerRect = containerRef.current!.getBoundingClientRect();
-    const imgAspect = naturalWidth / naturalHeight;
-    const containerAspect = containerRect.width / containerRect.height;
-    
-    const actualDisplayWidth = imgAspect > containerAspect 
-      ? containerRect.width 
-      : containerRect.height * imgAspect;
-    
-    ctx.lineWidth = brushSize * (canvasRef.current!.width / actualDisplayWidth);
-
-    if (lastPos.current) {
-        ctx.beginPath();
-        ctx.moveTo(lastPos.current.x, lastPos.current.y);
-        ctx.lineTo(coords.x, coords.y);
-        ctx.stroke();
-    }
-    lastPos.current = coords;
-  }
-  
-  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (!onMaskUpdate) return;
-    setIsDrawing(true);
-    lastPos.current = null; // Reset last position on new stroke
-    draw(e); // Draw a dot on single click
-  };
-
-  const stopDrawing = () => {
-    if (isDrawing && onMaskUpdate && canvasRef.current) {
-        onMaskUpdate(canvasRef.current.toDataURL());
-    }
-    setIsDrawing(false);
-    lastPos.current = null;
-  };
-  
-  const handleClearMask = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const canvas = canvasRef.current;
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        ctx?.clearRect(0, 0, canvas.width, canvas.height);
-        onMaskUpdate?.(null);
-    }
-  }
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -235,13 +159,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         data-dropzone-id={id}
-        onMouseDown={imageUrl ? startDrawing : undefined}
-        onMouseMove={imageUrl ? draw : undefined}
-        onMouseUp={imageUrl ? stopDrawing : undefined}
-        onMouseLeave={imageUrl ? stopDrawing : undefined}
-        onTouchStart={imageUrl ? startDrawing : undefined}
-        onTouchMove={imageUrl ? draw : undefined}
-        onTouchEnd={imageUrl ? stopDrawing : undefined}
+        {...maskInteractionHandlers}
       >
         <input
           type="file"
@@ -286,50 +204,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
         )}
       </div>
       
-      {/* Controls section - below the image */}
-      {imageUrl && onMaskUpdate && (
-        <div className="w-full mt-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-zinc-200 text-zinc-800 text-sm font-semibold px-4 py-2 rounded-md flex items-center gap-2">
-              <span>Brush:</span>
-              <input
-                type="range"
-                min="5"
-                max="50"
-                value={brushSize}
-                onChange={(e) => setBrushSize(Number(e.target.value))}
-                className="w-16 h-1 bg-gray-300 rounded-full appearance-none cursor-pointer"
-              />
-              <span className="text-xs">{brushSize}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {maskUrl && (
-              <button
-                onClick={handleClearMask}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
-                aria-label="Clear mask"
-              >
-                Clear Mask
-              </button>
-            )}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClearImage?.();
-              }}
-              className="bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold px-4 py-2 rounded-md transition-all shadow-lg"
-              aria-label="Clear image"
-            >
-              Clear Image
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Controls section - this will be provided by child components */}
+      {children}
 
-      {/* Clear Image button for when there's no mask functionality */}
-      {imageUrl && !onMaskUpdate && (
+      {/* Clear Image button - always show when image exists */}
+      {imageUrl && (
         <div className="w-full mt-4 flex justify-end">
           <button
             onClick={(e) => {
@@ -354,4 +233,5 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ id, label, onFileSelect, 
   );
 };
 
-export default ImageUploader;
+export default BaseImageUploader;
+export { type BaseImageUploaderProps };

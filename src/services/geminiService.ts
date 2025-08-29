@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { getImageDimensions, cropToOriginalAspectRatio } from '../utils/imageUtils';
 import { fileToDataUrl } from '../utils/fileUtils';
-import { drawRedBordersFromMask, createModelInputImage } from '../utils/canvasUtils';
-import { MAX_IMAGE_DIMENSION } from '../utils/constants';
+import { drawPurpleFillFromMask, drawRedMarkerFromPosition, createMaskFromMarkerPosition } from '../utils/canvasUtils';
 import { generateContentWithTwoImages, extractImageFromResponse } from './aiService';
 import { extractMaterialDescription } from './materialAnalysis';
 
@@ -25,12 +23,12 @@ const MATERIAL_APPLICATION_PROMPT = (materialDescription: string) =>
 `
 # 材料変換システム
 
-あなたは高精度な材料変換の専門家です。赤い線で領域指定した部分の材料を、指定された新しい材料に変更します。
+あなたは高精度な材料変換の専門家です。紫色の塗りつぶしで領域指定した部分の材料を、指定された新しい材料に変更します。
 
 ## 入力
 
 ### 画像
-- 1枚目：赤い線で領域指定した画像（変更対象領域を示す）
+- 1枚目：紫色の塗りつぶしで領域指定した画像（変更対象領域を示す）
 - 2枚目：オリジナルの画像（元の状態）
 - 黒背景や余白部分は無視し、画像本体のみを対象とします
 
@@ -40,7 +38,7 @@ const MATERIAL_APPLICATION_PROMPT = (materialDescription: string) =>
 
 ## 変換の実行手順
 
-1. **領域の特定**: 赤い線で指定された領域を正確に識別
+1. **領域の特定**: 紫色の塗りつぶしで指定された領域を正確に識別
 2. **材料の置換**: 指定領域の既存材料を新しい材料に完全に置換
 3. **環境適応**: 周囲の照明・遠近感・スケールに合わせて新材料を調整
 4. **物理的整合性**: 接触面の影、反射、質感の自然な表現
@@ -78,9 +76,9 @@ export interface MaterialTransferResult {
   debugImageUrl: string;
   /** The prompt used for final generation */
   finalPrompt: string;
-  /** Debug image showing material area with red borders */
+  /** Debug image showing material area with purple fill */
   materialDebugUrl?: string;
-  /** Debug image showing scene area with red borders */
+  /** Debug image showing scene area with purple fill */
   sceneDebugUrl?: string;
   /** AI-generated material description */
   materialDescription?: string;
@@ -95,34 +93,40 @@ export interface MaterialTransferResult {
  * 3. Result processing
  * 
  * @param materialImage - Source image containing the material to extract
- * @param materialMask - Mask data URL defining the material area
+ * @param materialMarkerPosition - Marker position defining the material area
  * @param sceneImage - Target scene image where material will be applied
  * @param sceneMask - Mask data URL defining the target area in the scene
  * @returns Complete result including final image and debug information
  */
 export const applyMaterial = async (
   materialImage: File,
-  materialMask: string,
+  materialMarkerPosition: {x: number, y: number} | null,
   sceneImage: File,
   sceneMask: string
 ): Promise<MaterialTransferResult> => {
   console.log('Starting material transfer process...');
   
-  // Create red-bordered debug images for both material and scene
+  if (!materialMarkerPosition) {
+    throw new Error('Material marker position is required');
+  }
+  
+  // Create debug images - red marker for material, purple fill for scene
   console.log('Creating debug images...');
-  const [materialRedBordered, sceneRedBordered] = await Promise.all([
-    drawRedBordersFromMask(materialImage, materialMask),
-    drawRedBordersFromMask(sceneImage, sceneMask)
+  const [materialRedMarker, scenePurpleFilled] = await Promise.all([
+    drawRedMarkerFromPosition(materialImage, materialMarkerPosition),
+    drawPurpleFillFromMask(sceneImage, sceneMask)
   ]);
   
   // Convert debug images to data URLs for frontend display
   const [materialDebugUrl, sceneDebugUrl] = await Promise.all([
-    fileToDataUrl(materialRedBordered),
-    fileToDataUrl(sceneRedBordered)
+    fileToDataUrl(materialRedMarker),
+    fileToDataUrl(scenePurpleFilled)
   ]);
   
   // Stage 1: Analyze material characteristics
   console.log('Analyzing material characteristics...');
+  // Create mask from marker position for material analysis
+  const materialMask = await createMaskFromMarkerPosition(materialImage, materialMarkerPosition);
   const materialDescription = await extractMaterialDescription(materialImage, materialMask);
 
   // Stage 2: Prepare scene for material application and generate final image
@@ -135,7 +139,7 @@ export const applyMaterial = async (
   console.log('Generating final image with material applied...');
   const response = await generateContentWithTwoImages(
     'gemini-2.5-flash-image-preview',
-    sceneRedBordered,
+    scenePurpleFilled,
     sceneImage,
     finalPrompt
   );

@@ -46,7 +46,7 @@ const App: React.FC = () => {
    */
   const onGenerate = useCallback(async () => {
     // Validation
-    if (!imageState.productImageFile || !imageState.sceneImageFile || !imageState.materialMask || !imageState.sceneMask) {
+    if (!imageState.productImageFile || !imageState.sceneImageFile || !imageState.materialMarkerPosition || !imageState.sceneMask) {
       uiState.setErrorMessage('Please select a material and a scene area before generating.');
       return;
     }
@@ -58,7 +58,7 @@ const App: React.FC = () => {
     try {
       const result = await applyMaterial(
         imageState.productImageFile,
-        imageState.materialMask,
+        imageState.materialMarkerPosition,
         imageState.sceneImageFile,
         imageState.sceneMask
       );
@@ -136,9 +136,9 @@ const App: React.FC = () => {
         {/* Image upload section */}
         <ImageSection
           productImageUrl={imageState.productImageUrl}
-          materialMask={imageState.materialMask}
+          materialMarkerPosition={imageState.materialMarkerPosition}
           onProductImageUpload={onProductImageUpload}
-          onMaterialMaskUpdate={imageState.handleMaterialMaskUpdate}
+          onMaterialMarkerUpdate={imageState.handleMaterialMarkerUpdate}
           onProductImageClear={onProductImageClear}
           showMaterialDebug={uiState.showMaterialDebug}
           onMaterialDebugClick={() => uiState.setIsMaterialDebugModalOpen(true)}

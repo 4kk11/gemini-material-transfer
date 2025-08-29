@@ -7,8 +7,6 @@
  * Canvas utilities for drawing operations and mask processing
  */
 
-import { resizeImage } from './imageUtils';
-
 /**
  * Draws red borders around the masked area on the original image for debugging
  * @param baseImageFile - The base image file
@@ -138,19 +136,16 @@ export const drawRedBordersFromMask = async (
 };
 
 /**
- * Creates model input image with mask applied in different modes
+ * Draws purple filled area based on the mask on the original image
  * @param baseImageFile - The base image file
- * @param maskDataUrl - Data URL of the mask
- * @param mode - Processing mode: 'isolate' for material extraction, 'inpaint' for scene processing
- * @returns Promise resolving to processed File
+ * @param maskDataUrl - Data URL of the mask defining the area
+ * @returns Promise resolving to File with purple fill drawn
  */
-export const createModelInputImage = (
+export const drawPurpleFillFromMask = async (
   baseImageFile: File,
-  maskDataUrl: string,
-  mode: 'isolate' | 'inpaint'
+  maskDataUrl: string
 ): Promise<File> => {
   return new Promise(async (resolve, reject) => {
-    const targetDimension = 1024;
     const baseImg = new Image();
     baseImg.src = URL.createObjectURL(baseImageFile);
     await baseImg.decode();
@@ -161,67 +156,132 @@ export const createModelInputImage = (
     await maskImg.decode();
 
     const canvas = document.createElement('canvas');
-    canvas.width = targetDimension;
-    canvas.height = targetDimension;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    canvas.width = baseImg.naturalWidth;
+    canvas.height = baseImg.naturalHeight;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return reject(new Error('Could not get canvas context.'));
+
+    // Draw the original image
+    ctx.drawImage(baseImg, 0, 0);
+
+    // Draw the mask with purple fill using composite operation
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(128, 0, 128, 0.8)'; // Purple with 80% opacity
     
-    // Fill with black background
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, targetDimension, targetDimension);
+    // Create temporary canvas to process mask
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return reject(new Error('Could not get temp canvas context.'));
     
-    // Calculate sizing to fit image within square while maintaining aspect ratio
-    const aspectRatio = baseImg.naturalWidth / baseImg.naturalHeight;
-    let newWidth, newHeight;
-    if (aspectRatio > 1) {
-      newWidth = targetDimension;
-      newHeight = targetDimension / aspectRatio;
-    } else {
-      newHeight = targetDimension;
-      newWidth = targetDimension * aspectRatio;
-    }
-    const x = (targetDimension - newWidth) / 2;
-    const y = (targetDimension - newHeight) / 2;
-
-    // Draw the base image
-    ctx.drawImage(baseImg, x, y, newWidth, newHeight);
-
-    if (mode === 'isolate') {
-      // For material extraction: apply mask to isolate the material area
-      ctx.globalCompositeOperation = 'destination-in';
-      ctx.drawImage(maskImg, x, y, newWidth, newHeight);
-    } else { // inpaint mode
-      // For scene inpainting: convert mask to magenta overlay for AI guidance
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = targetDimension;
-      tempCanvas.height = targetDimension;
-      const tempCtx = tempCanvas.getContext('2d');
-      if (!tempCtx) return reject('Could not get temp canvas context');
-
-      // Draw mask and convert to magenta overlay
-      tempCtx.drawImage(maskImg, x, y, newWidth, newHeight);
-      const imageData = tempCtx.getImageData(0, 0, targetDimension, targetDimension);
-      const data = imageData.data;
-      
-      // Convert mask pixels to magenta (R=255, G=0, B=255)
-      for (let i = 0; i < data.length; i += 4) {
-        if (data[i + 3] > 0) { // If pixel is not transparent in mask
-          data[i] = 255;     // R
-          data[i + 1] = 0;   // G
-          data[i + 2] = 255; // B
-          data[i + 3] = 255; // A
+    // Draw mask to temp canvas
+    tempCtx.drawImage(maskImg, 0, 0, canvas.width, canvas.height);
+    
+    // Apply purple fill where mask is not transparent
+    const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    ctx.beginPath();
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const idx = (y * canvas.width + x) * 4;
+        const alpha = data[idx + 3];
+        
+        if (alpha > 0) {
+          ctx.rect(x, y, 1, 1);
         }
       }
-      tempCtx.putImageData(imageData, 0, 0);
-      ctx.drawImage(tempCanvas, 0, 0);
     }
+    ctx.fill();
 
     canvas.toBlob(blob => {
       if (blob) {
-        resolve(new File([blob], `${mode}-image.png`, { type: 'image/png' }));
+        resolve(new File([blob], 'purple-fill-image.jpeg', { type: 'image/jpeg' }));
       } else {
         reject(new Error('Failed to create blob from canvas'));
       }
-    }, 'image/png');
+    }, 'image/jpeg', 0.95);
   });
 };
+
+/**
+ * Draws red marker at specified position on the original image
+ * @param baseImageFile - The base image file
+ * @param markerPosition - Position {x, y} for the marker
+ * @returns Promise resolving to File with red marker drawn
+ */
+export const drawRedMarkerFromPosition = async (
+  baseImageFile: File,
+  markerPosition: {x: number, y: number}
+): Promise<File> => {
+  return new Promise(async (resolve, reject) => {
+    const baseImg = new Image();
+    baseImg.src = URL.createObjectURL(baseImageFile);
+    await baseImg.decode();
+    URL.revokeObjectURL(baseImg.src);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = baseImg.naturalWidth;
+    canvas.height = baseImg.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return reject(new Error('Could not get canvas context.'));
+
+    // Draw the original image
+    ctx.drawImage(baseImg, 0, 0);
+
+    // Make radius proportional to image size, but with a minimum
+    const markerRadius = Math.max(10, Math.min(canvas.width, canvas.height) * 0.03);
+
+    // Draw the marker (red circle with white outline)
+    ctx.beginPath();
+    ctx.arc(markerPosition.x, markerPosition.y, markerRadius, 0, 2 * Math.PI, false);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    ctx.lineWidth = markerRadius * 0.2;
+    ctx.strokeStyle = 'white';
+    ctx.stroke();
+
+    canvas.toBlob(blob => {
+      if (blob) {
+        resolve(new File([blob], 'red-marker-image.jpeg', { type: 'image/jpeg' }));
+      } else {
+        reject(new Error('Failed to create blob from canvas'));
+      }
+    }, 'image/jpeg', 0.95);
+  });
+};
+
+/**
+ * Creates a circular mask from marker position
+ * @param imageFile - The base image file to get dimensions
+ * @param markerPosition - Position {x, y} for the marker
+ * @returns Promise resolving to mask data URL
+ */
+export const createMaskFromMarkerPosition = async (
+  imageFile: File,
+  markerPosition: {x: number, y: number}
+): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(imageFile);
+    await img.decode();
+    URL.revokeObjectURL(img.src);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return reject(new Error('Could not get canvas context.'));
+
+    // Create white circular mask
+    ctx.fillStyle = 'white';
+    const markerRadius = Math.max(10, Math.min(canvas.width, canvas.height) * 0.03);
+    ctx.beginPath();
+    ctx.arc(markerPosition.x, markerPosition.y, markerRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    resolve(canvas.toDataURL());
+  });
+};
+

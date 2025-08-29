@@ -4,14 +4,15 @@
  */
 
 import React from 'react';
-import ImageUploader from './ImageUploader';
+import MarkerImageUploader from './MarkerImageUploader';
+import BrushImageUploader from './BrushImageUploader';
 
 interface ImageSectionProps {
   // Product image props
   productImageUrl: string | null;
-  materialMask: string | null;
+  materialMarkerPosition: {x: number, y: number} | null;
   onProductImageUpload: (file: File) => void;
-  onMaterialMaskUpdate: (maskDataUrl: string | null) => void;
+  onMaterialMarkerUpdate: (markerPosition: {x: number, y: number} | null) => void;
   onProductImageClear: () => void;
   showMaterialDebug: boolean;
   onMaterialDebugClick: () => void;
@@ -33,9 +34,9 @@ interface ImageSectionProps {
  */
 const ImageSection: React.FC<ImageSectionProps> = ({
   productImageUrl,
-  materialMask,
+  materialMarkerPosition,
   onProductImageUpload,
-  onMaterialMaskUpdate,
+  onMaterialMarkerUpdate,
   onProductImageClear,
   showMaterialDebug,
   onMaterialDebugClick,
@@ -54,12 +55,11 @@ const ImageSection: React.FC<ImageSectionProps> = ({
         <h2 className="text-2xl font-extrabold text-center mb-5 text-zinc-800">
           Product (Material Source)
         </h2>
-        <ImageUploader 
+        <MarkerImageUploader 
           id="product-uploader"
           onFileSelect={onProductImageUpload}
           imageUrl={productImageUrl}
-          maskUrl={materialMask}
-          onMaskUpdate={onMaterialMaskUpdate}
+          onMarkerUpdate={onMaterialMarkerUpdate}
           onClearImage={onProductImageClear}
           showDebugButton={showMaterialDebug}
           onDebugClick={onMaterialDebugClick}
@@ -70,7 +70,7 @@ const ImageSection: React.FC<ImageSectionProps> = ({
         <h2 className="text-2xl font-extrabold text-center mb-5 text-zinc-800">
           Scene (Target)
         </h2>
-        <ImageUploader 
+        <BrushImageUploader 
           id="scene-uploader"
           onFileSelect={onSceneImageUpload}
           imageUrl={sceneImageUrl}

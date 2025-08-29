@@ -13,8 +13,8 @@ export const useImageState = () => {
   const [productImageFile, setProductImageFile] = useState<File | null>(null);
   const [sceneImageFile, setSceneImageFile] = useState<File | null>(null);
   
-  // Mask states
-  const [materialMask, setMaterialMask] = useState<string | null>(null);
+  // Material marker position and scene mask states
+  const [materialMarkerPosition, setMaterialMarkerPosition] = useState<{x: number, y: number} | null>(null);
   const [sceneMask, setSceneMask] = useState<string | null>(null);
   
   // Result state
@@ -29,7 +29,7 @@ export const useImageState = () => {
    */
   const handleProductImageUpload = useCallback((file: File) => {
     setProductImageFile(file);
-    setMaterialMask(null); // Reset mask on new image
+    setMaterialMarkerPosition(null); // Reset marker on new image
     setResultImageUrl(null); // Clear previous result
   }, []);
 
@@ -43,10 +43,10 @@ export const useImageState = () => {
   }, []);
 
   /**
-   * Updates material mask
+   * Updates material marker position
    */
-  const handleMaterialMaskUpdate = useCallback((maskDataUrl: string | null) => {
-    setMaterialMask(maskDataUrl);
+  const handleMaterialMarkerUpdate = useCallback((markerPosition: {x: number, y: number} | null) => {
+    setMaterialMarkerPosition(markerPosition);
   }, []);
   
   /**
@@ -61,7 +61,7 @@ export const useImageState = () => {
    */
   const clearProductImage = useCallback(() => {
     setProductImageFile(null);
-    setMaterialMask(null);
+    setMaterialMarkerPosition(null);
   }, []);
 
   /**
@@ -78,7 +78,7 @@ export const useImageState = () => {
   const resetImageState = useCallback(() => {
     setProductImageFile(null);
     setSceneImageFile(null);
-    setMaterialMask(null);
+    setMaterialMarkerPosition(null);
     setSceneMask(null);
     setResultImageUrl(null);
   }, []);
@@ -100,7 +100,7 @@ export const useImageState = () => {
     // State
     productImageFile,
     sceneImageFile,
-    materialMask,
+    materialMarkerPosition,
     sceneMask,
     resultImageUrl,
     productImageUrl,
@@ -108,7 +108,7 @@ export const useImageState = () => {
     // Actions
     handleProductImageUpload,
     handleSceneImageUpload,
-    handleMaterialMaskUpdate,
+    handleMaterialMarkerUpdate,
     handleSceneMaskUpdate,
     clearProductImage,
     clearSceneImage,
@@ -116,6 +116,6 @@ export const useImageState = () => {
     setResultImageUrl,
     // Computed
     areImagesUploaded: !!(productImageFile && sceneImageFile),
-    canGenerate: !!(materialMask && sceneMask)
+    canGenerate: !!(materialMarkerPosition && sceneMask)
   };
 };
