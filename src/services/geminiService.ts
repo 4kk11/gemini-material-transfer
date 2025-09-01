@@ -139,7 +139,8 @@ const generateSeamlessTexture = async (
         'gemini-2.5-flash-image-preview',
         resizedImage,
         SEAMLESS_TEXTURE_GENERATION_PROMPT,
-        onProgress
+        onProgress,
+        0.7
       );
       const extracted = extractImageFromResponse(response);
       dataUrl = extracted.dataUrl;
@@ -268,7 +269,8 @@ export const applyMaterial = async (
     seamlessTexture,
     scenePurpleFilled,
     finalPrompt,
-    onProgress
+    onProgress,
+    0.7
   );
 
   console.log('Received response from model.');

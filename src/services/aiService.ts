@@ -40,13 +40,15 @@ export type ProgressCallback = (message: string) => void;
  * @param imageFile - Image file to analyze
  * @param prompt - Text prompt for the AI
  * @param onProgress - Optional progress callback
+ * @param temperature - Controls randomness, defaults to 0.7
  * @returns AI response with generated content
  */
 export const generateContentWithImage = async (
   model: string,
   imageFile: File,
   prompt: string,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  temperature = 0.9,
 ): Promise<GenerateContentResponse> => {
   const ai = getAIClient();
   
@@ -70,7 +72,8 @@ export const generateContentWithImage = async (
       
       const response = await ai.models.generateContent({
         model,
-        contents: { parts: [imagePart, textPart] }
+        contents: { parts: [imagePart, textPart] },
+        config: { temperature }
       });
       
       // Check if response contains RECITATION error
@@ -116,6 +119,7 @@ export const generateContentWithImage = async (
  * @param imageFile2 - Second image file to analyze
  * @param prompt - Text prompt for the AI
  * @param onProgress - Optional progress callback
+ * @param temperature - Controls randomness, defaults to 0.7
  * @returns AI response with generated content
  */
 export const generateContentWithTwoImages = async (
@@ -123,7 +127,8 @@ export const generateContentWithTwoImages = async (
   imageFile1: File,
   imageFile2: File,
   prompt: string,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  temperature = 0.9,
 ): Promise<GenerateContentResponse> => {
   const ai = getAIClient();
   
@@ -148,7 +153,8 @@ export const generateContentWithTwoImages = async (
       
       const response = await ai.models.generateContent({
         model,
-        contents: { parts: [imagePart1, imagePart2, textPart] }
+        contents: { parts: [imagePart1, imagePart2, textPart] },
+        config: { temperature }
       });
       
       // Check if response contains RECITATION error
