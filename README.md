@@ -1,20 +1,45 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Gemini Material Transfer
 
-# Run and deploy your AI Studio app
+A web application that uses Google's Gemini AI to analyze and transfer materials between images.
 
-This contains everything you need to run your app locally.
+## Demo
 
-View your app in AI Studio: https://ai.studio/apps/drive/19H4dPVGMs3R02mwTWRcRMQ1x8YfVMJNS
+Try the demo on [Google AI Studio](https://ai.studio/apps/drive/1uCKcguQjBtrlv6jKMvbUadK6f0EvnAZR)
 
-## Run Locally
+[Video placeholder - Add demo video here]
 
-**Prerequisites:**  Node.js
+## Features
 
+- Upload before/after images for material analysis
+- AI-powered material detection and transfer recommendations
+- Interactive image comparison with slider
+- Real-time processing with progress tracking
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Prerequisites
+
+- Node.js
+- Gemini API key
+
+## Installation
+
+```bash
+npm install
+```
+
+## Setup
+
+Set your Gemini API key in `.env.local`:
+
+```
+GEMINI_API_KEY=your_api_key_here
+```
+
+## Run
+
+```bash
+npm run dev
+```
+
+## License
+
+MIT
