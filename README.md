@@ -8,6 +8,10 @@ Try the demo on [Google AI Studio](https://ai.studio/apps/drive/1uCKcguQjBtrlv6j
 
 https://github.com/user-attachments/assets/c420377a-6f1c-4622-8940-731c5c0a348a
 
+
+https://github.com/user-attachments/assets/14197782-d502-49cc-b53d-ac6ca0de788a
+
+
 ## Features
 
 - Click-based material selection from source image
