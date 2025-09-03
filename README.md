@@ -6,7 +6,7 @@ A web application that uses Google's Gemini AI to analyze and transfer materials
 
 Try the demo on [Google AI Studio](https://ai.studio/apps/drive/1uCKcguQjBtrlv6jKMvbUadK6f0EvnAZR)
 
-[Video placeholder - Add demo video here]
+https://github.com/user-attachments/assets/c420377a-6f1c-4622-8940-731c5c0a348a
 
 ## Features
 
