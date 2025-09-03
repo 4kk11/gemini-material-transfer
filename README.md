@@ -1,6 +1,6 @@
 # Gemini Material Transfer
 
-A web application that uses Google's Gemini AI to analyze and transfer materials between images.
+An AI-powered web application that intelligently transfers materials and textures from one image to another using Google's Gemini API. Select a material from any source image and apply it to a specific area in your target image with natural, context-aware results.
 
 ## Demo
 
@@ -10,10 +10,14 @@ https://github.com/user-attachments/assets/c420377a-6f1c-4622-8940-731c5c0a348a
 
 ## Features
 
-- Upload before/after images for material analysis
-- AI-powered material detection and transfer recommendations
-- Interactive image comparison with slider
-- Real-time processing with progress tracking
+- Click-based material selection from source image
+- Brush-based area selection on target image
+- AI-powered material transfer using Google's Gemini
+- Interactive before/after comparison slider
+- Real-time progress tracking with dynamic messages
+- Debug modals for material and scene analysis
+- Instant start with example images
+- Support for various image formats
 
 ## Prerequisites
 
